@@ -22,7 +22,7 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="8cg-zC-yzr">
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="8cg-zC-yzr">
                                 <rect key="frame" x="16" y="57" width="343" height="206"/>
                                 <color key="backgroundColor" red="0.93725490199999995" green="0.93725490199999995" blue="0.95686274510000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
@@ -79,7 +79,7 @@
                                 </constraints>
                                 <state key="normal" title="开始下载"/>
                                 <connections>
-                                    <action selector="download:" destination="eiG-rt-DHr" eventType="touchUpInside" id="3ld-NB-SnD"/>
+                                    <action selector="download" destination="eiG-rt-DHr" eventType="touchUpInside" id="IEc-pB-7m4"/>
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="缓存数据" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2Hr-dC-xx9">
@@ -122,12 +122,12 @@
                         </constraints>
                     </view>
                     <connections>
-                        <outlet property="cacheData" destination="mfq-ES-FcQ" id="KZc-c2-lrb"/>
-                        <outlet property="cacheStatus" destination="FG5-FV-mJ8" id="PGJ-Px-Uj1"/>
+                        <outlet property="cacheStatusLabel" destination="FG5-FV-mJ8" id="OtX-Jd-xCW"/>
                         <outlet property="cacheSwitch" destination="IYV-lN-vOV" id="He6-Xx-H3Q"/>
+                        <outlet property="cacheTextView" destination="mfq-ES-FcQ" id="ExO-wg-yTd"/>
                         <outlet property="downloadBtn" destination="zXe-Fd-XP4" id="6Ed-h6-fJB"/>
-                        <outlet property="networkData" destination="8cg-zC-yzr" id="Ddh-03-EHN"/>
-                        <outlet property="progress" destination="X8B-j2-n24" id="Jkb-eU-r75"/>
+                        <outlet property="networkTextView" destination="8cg-zC-yzr" id="1ul-2H-ckx"/>
+                        <outlet property="progressView" destination="X8B-j2-n24" id="pVh-pb-pyw"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="3l2-13-yPx" userLabel="First Responder" sceneMemberID="firstResponder"/>

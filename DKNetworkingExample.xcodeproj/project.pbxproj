@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D74D0CC21E6285A70034A791 /* NSDictionary+DKNetworking.m in Sources */ = {isa = PBXBuildFile; fileRef = D74D0CC11E6285A70034A791 /* NSDictionary+DKNetworking.m */; };
 		D7ACFC631E616D70000BE551 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D7ACFC611E616D70000BE551 /* Main.storyboard */; };
 		D7ACFC651E616D70000BE551 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D7ACFC641E616D70000BE551 /* Assets.xcassets */; };
 		D7ACFC681E616D70000BE551 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D7ACFC661E616D70000BE551 /* LaunchScreen.storyboard */; };
@@ -49,6 +50,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		D74D0CC01E6285A70034A791 /* NSDictionary+DKNetworking.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDictionary+DKNetworking.h"; sourceTree = "<group>"; };
+		D74D0CC11E6285A70034A791 /* NSDictionary+DKNetworking.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDictionary+DKNetworking.m"; sourceTree = "<group>"; };
 		D7ACFC551E616D70000BE551 /* DKNetworkingExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DKNetworkingExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D7ACFC621E616D70000BE551 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		D7ACFC641E616D70000BE551 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -196,6 +199,8 @@
 				D7ACFCDC1E6171CE000BE551 /* DKNetworking.m */,
 				D7ACFCDE1E6171F1000BE551 /* DKNetworkCache.h */,
 				D7ACFCDF1E6171F1000BE551 /* DKNetworkCache.m */,
+				D74D0CC01E6285A70034A791 /* NSDictionary+DKNetworking.h */,
+				D74D0CC11E6285A70034A791 /* NSDictionary+DKNetworking.m */,
 			);
 			path = DKNetworking;
 			sourceTree = "<group>";
@@ -418,6 +423,7 @@
 				D7ACFD0B1E6175AB000BE551 /* AFAutoPurgingImageCache.m in Sources */,
 				D7ACFD081E6175AB000BE551 /* AFURLRequestSerialization.m in Sources */,
 				D7ACFCD41E617090000BE551 /* YYCache.m in Sources */,
+				D74D0CC21E6285A70034A791 /* NSDictionary+DKNetworking.m in Sources */,
 				D7ACFCDD1E6171CE000BE551 /* DKNetworking.m in Sources */,
 				D7ACFD051E6175AB000BE551 /* AFHTTPSessionManager.m in Sources */,
 				D7ACFCA71E616F48000BE551 /* AppDelegate.m in Sources */,

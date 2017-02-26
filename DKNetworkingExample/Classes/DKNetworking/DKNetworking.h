@@ -1,6 +1,6 @@
 //
 //  DKNetworking.h
-//  DKNetworkingExample
+//  DKNetworking
 //
 //  Created by 庄槟豪 on 2017/2/25.
 //  Copyright © 2017年 cn.dankal. All rights reserved.
@@ -8,16 +8,17 @@
 
 #import <UIKit/UIKit.h>
 #import "DKNetworkCache.h"
+#import "NSDictionary+DKNetworking.h"
 
 #ifndef DKLog
 #ifdef DEBUG
-#define DKLog(...) NSLog(@"%s 第%d行 %@",__func__,__LINE__,[NSString stringWithFormat:__VA_ARGS__])
+#define DKLog(...) printf("[%s] %s 第%d行: %s\n", __TIME__, __func__, __LINE__, [[NSString stringWithFormat:__VA_ARGS__] UTF8String])
 #else
 #define DKLog(...)
 #endif
 #endif
 
-typedef NS_ENUM (NSUInteger, DKNetworkStatus) {
+typedef NS_ENUM(NSUInteger, DKNetworkStatus) {
     /** 未知网络 */
     DKNetworkStatusUnknown,
     /** 无网络 */
@@ -28,27 +29,27 @@ typedef NS_ENUM (NSUInteger, DKNetworkStatus) {
     DKNetworkStatusReachableViaWiFi
 };
 
-typedef NS_ENUM (NSUInteger, DKRequestSerializer) {
-    /** 设置请求数据为JSON格式 */
+typedef NS_ENUM(NSUInteger, DKRequestSerializer) {
+    /** 请求数据为JSON格式 */
     DKRequestSerializerJSON,
-    /** 设置请求数据为二进制格式 */
+    /** 请求数据为二进制格式 */
     DKRequestSerializerHTTP,
 };
 
-typedef NS_ENUM (NSUInteger, DKResponseSerializer) {
-    /** 设置响应数据为JSON格式*/
+typedef NS_ENUM(NSUInteger, DKResponseSerializer) {
+    /** 响应数据为JSON格式*/
     DKResponseSerializerJSON,
-    /** 设置响应数据为二进制格式*/
+    /** 响应数据为二进制格式*/
     DKResponseSerializerHTTP,
 };
 
 #pragma mark - Block
 
 /** 请求回调Block */
-typedef void(^DKHttpRequestBlock)(id responseObject, NSError *error);
+typedef void(^DKHttpRequestBlock)(NSDictionary *responseObject, NSError *error);
 
 /** 缓存的Block */
-typedef void(^DKHttpRequestCacheBlock)(id responseCache);
+typedef void(^DKHttpRequestCacheBlock)(NSDictionary *responseCache);
 
 /** 
  * 上传或者下载的进度回调
@@ -67,7 +68,7 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
 /**
  有网:YES, 无网:NO
  */
-+ (BOOL)isNetwork;
++ (BOOL)isNetworking;
 
 /**
  手机网络:YES, 非手机网络:NO
@@ -80,7 +81,7 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
 + (BOOL)isWiFiNetwork;
 
 /**
- 实时获取网络状态,通过Block回调实时获取
+ 实时获取网络状态，通过Block回调实时获取
  */
 + (void)networkStatusWithBlock:(DKNetworkStatusBlock)networkStatusBlock;
 
@@ -99,7 +100,7 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
 #pragma mark - Request Method
 
 /**
- GET请求
+ GET请求，不缓存
 
  @param URL 请求地址
  @param parameters 请求参数
@@ -111,7 +112,7 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
                  callback:(DKHttpRequestBlock)callback;
 
 /**
- GET请求,自动缓存
+ GET请求，自动缓存
 
  @param URL 请求地址
  @param parameters 请求参数
@@ -125,7 +126,7 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
                  callback:(DKHttpRequestBlock)callback;
 
 /**
- POST请求
+ POST请求，不缓存
  
  @param URL 请求地址
  @param parameters 请求参数
@@ -137,7 +138,7 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
                  callback:(DKHttpRequestBlock)callback;
 
 /**
- POST请求,自动缓存
+ POST请求，自动缓存
  
  @param URL 请求地址
  @param parameters 请求参数
@@ -169,15 +170,15 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
                                callback:(DKHttpRequestBlock)callback;
 
 /**
- 上传单/多张图片
+ 上传图片
 
  @param URL 请求地址
  @param parameters 请求参数
  @param name 图片对应服务器上的字段
  @param images 图片数组
- @param fileNames 图片文件名数组, 可以为nil, 数组内的文件名默认为当前日期时间"yyyyMMddHHmmss"
+ @param fileNames 图片文件名数组，传入nil时数组内的文件名默认为当前日期时间戳+索引
  @param imageScale 图片文件压缩比 范围 (0.f ~ 1.f)
- @param imageType 图片文件的类型,例:png、jpg(默认类型)....
+ @param imageType 图片文件的类型，例:png、jpg(默认类型)....
  @param progressBlock 上传进度回调
  @param callback 请求回调
  @return 返回的对象可取消请求,调用cancel方法
@@ -204,7 +205,7 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
 + (NSURLSessionTask *)downloadWithURL:(NSString *)URL
                               fileDir:(NSString *)fileDir
                         progressBlock:(DKHttpProgressBlock)progressBlock
-                             callback:(void(^)(NSString *filePath,NSError *error))callback;
+                             callback:(void(^)(NSString *filePath, NSError *error))callback;
 
 #pragma mark - Cancel Request
 
@@ -218,7 +219,7 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
  */
 + (void)cancelRequestWithURL:(NSString *)URL;
 
-#pragma mark - 定制 AFHTTPSessionManager
+#pragma mark - Reset SessionManager
 
 /**
  设置网络请求参数的格式 : 默认为二进制格式
@@ -245,12 +246,5 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
  设置请求头
  */
 + (void)setValue:(NSString *)value forHTTPHeaderField:(NSString *)field;
-
-/**
- 是否打开网络状态转圈菊花:默认打开
-
- @param open YES:打开, NO:关闭
- */
-+ (void)openNetworkActivityIndicator:(BOOL)open;
 
 @end
