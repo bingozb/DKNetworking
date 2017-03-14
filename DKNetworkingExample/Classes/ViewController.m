@@ -60,6 +60,7 @@
             self.networkTextView.text = error.description;
         }
     }];
+    
 }
 
 /**

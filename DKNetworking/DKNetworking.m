@@ -10,14 +10,13 @@
 #import "AFNetworking.h"
 
 #define DKHTTPRequest(Method) \
-    if (_cacheType == DKNetworkCacheTypeCacheOnly || _cacheType == DKNetworkCacheTypeCacheNetwork) \
+    if (_cacheType == DKNetworkCacheTypeCacheNetwork) \
         callback([DKNetworkCache httpCacheForURL:URL parameters:parameters], nil); \
 NSURLSessionTask *sessionTask = [_sessionManager Method:URL parameters:parameters progress:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) { \
         [[self allSessionTask] removeObject:task]; \
         if (_isOpenLog) \
             DKLog(@"%@",[responseObject dk_jsonString]); \
         if (callback) \
-            if (_cacheType == DKNetworkCacheTypeCacheNetwork || _cacheType == DKNetworkCacheTypeNetworkOnly) \
                 callback(responseObject, nil); \
         [DKNetworkCache setHttpCache:responseObject URL:URL parameters:parameters]; \
     } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) { \

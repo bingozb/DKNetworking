@@ -21,9 +21,7 @@
 typedef NS_ENUM(NSUInteger, DKNetworkCacheType) {
     /** 只加载网络数据 */
     DKNetworkCacheTypeNetworkOnly,
-    /** 只加载缓存数据 */
-    DKNetworkCacheTypeCacheOnly,
-    /** 先加载缓存 再加载网络 */
+    /** 先加载缓存,然后加载网络 */
     DKNetworkCacheTypeCacheNetwork
 };
 
