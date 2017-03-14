@@ -36,6 +36,8 @@ static NSString * const downloadUrlStr = @"https://cdn.bingo.ren/protect/scp.png
     // 开启日志打印
     [DKNetworking openLog];
     
+    [DKNetworking setupCacheType:DKNetworkCacheTypeCacheNetwork];
+    
     // 获取网络缓存大小
     DKLog(@"cacheSize = %@",[DKNetworkCache cacheSize]);
     
@@ -57,11 +59,10 @@ static NSString * const downloadUrlStr = @"https://cdn.bingo.ren/protect/scp.png
     if (isOn) { // 自动缓存
         self.cacheStatusLabel.text = @"缓存打开";
         self.cacheSwitch.on = YES;
-        [DKNetworking POST:url parameters:nil cacheBlock:^(id responseCache) {
-            // 加载缓存数据
-            self.cacheTextView.text = [responseCache dk_jsonString];
-        } callback:^(id responseObject, NSError *error) {
+        [DKNetworking POST:url parameters:nil callback:^(NSDictionary *responseObject, NSError *error) {
             if (!error) {
+//                // 加载缓存数据
+//                self.cacheTextView.text = [NSString stringWithFormat:@"这是缓存数据 ：%@", [responseObject dk_jsonString]];
                 // 请求网络数据
                 self.networkTextView.text = [responseObject dk_jsonString];
             }
