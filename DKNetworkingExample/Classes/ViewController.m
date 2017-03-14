@@ -9,22 +9,17 @@
 #import "ViewController.h"
 #import "DKNetworking.h"
 
-static NSString * const urlStr = @"https://m.sfddj.com/app/v1/material/findMaterial";
-static NSString * const downloadUrlStr = @"https://cdn.bingo.ren/protect/scp.png";
-
 @interface ViewController ()
 
 @property (weak, nonatomic) IBOutlet UITextView *networkTextView;
-@property (weak, nonatomic) IBOutlet UITextView *cacheTextView;
+@property (weak, nonatomic) IBOutlet UITextField *apiTextField;
+@property (weak, nonatomic) IBOutlet UITextField *downloadUrlTextField;
 @property (weak, nonatomic) IBOutlet UILabel *cacheStatusLabel;
 @property (weak, nonatomic) IBOutlet UISwitch *cacheSwitch;
 @property (weak, nonatomic) IBOutlet UIProgressView *progressView;
 @property (weak, nonatomic) IBOutlet UIButton *downloadBtn;
-
-/** 是否开启缓存 */
-@property (nonatomic, assign, getter=isCache) BOOL cache;
 /** 是否开始下载 */
-@property (nonatomic, assign, getter=isDownload) BOOL download;
+@property (nonatomic, assign, getter=isDownloading) BOOL downloading;
 @end
 
 @implementation ViewController
@@ -35,6 +30,8 @@ static NSString * const downloadUrlStr = @"https://cdn.bingo.ren/protect/scp.png
     
     // 开启日志打印
     [DKNetworking openLog];
+    
+    [DKNetworking setupCacheType:DKNetworkCacheTypeCacheNetwork];
     
     // 获取网络缓存大小
     DKLog(@"cacheSize = %@",[DKNetworkCache cacheSize]);
@@ -54,30 +51,16 @@ static NSString * const downloadUrlStr = @"https://cdn.bingo.ren/protect/scp.png
 
 - (void)postWithCache:(BOOL)isOn url:(NSString *)url
 {
-    if (isOn) { // 自动缓存
-        self.cacheStatusLabel.text = @"缓存打开";
-        self.cacheSwitch.on = YES;
-        [DKNetworking POST:url parameters:nil cacheBlock:^(id responseCache) {
-            // 加载缓存数据
-            self.cacheTextView.text = [responseCache dk_jsonString];
-        } callback:^(id responseObject, NSError *error) {
-            if (!error) {
-                // 请求网络数据
-                self.networkTextView.text = [responseObject dk_jsonString];
-            }
-        }];
-        
-    } else { // 无缓存
-        self.cacheStatusLabel.text = @"缓存关闭";
-        self.cacheSwitch.on = NO;
-        self.cacheTextView.text = @"";
-        
-        [DKNetworking POST:url parameters:nil callback:^(id responseObject, NSError *error) {
-            if (!error) {
-                self.networkTextView.text = [responseObject dk_jsonString];
-            }
-        }];
-    }
+    [DKNetworking setupCacheType:isOn ? DKNetworkCacheTypeCacheNetwork : DKNetworkCacheTypeNetworkOnly];
+    
+    [DKNetworking POST:url parameters:nil callback:^(NSDictionary *responseObject, NSError *error) {
+        if (!error) {
+            self.networkTextView.text = [responseObject dk_jsonString];
+        } else {
+            self.networkTextView.text = error.description;
+        }
+    }];
+    
 }
 
 /**
@@ -90,13 +73,13 @@ static NSString * const downloadUrlStr = @"https://cdn.bingo.ren/protect/scp.png
         switch (status) {
             case DKNetworkStatusUnknown:
             case DKNetworkStatusNotReachable:
-                self.networkTextView.text = @"没有网络，只加载缓存数据";
-                [self postWithCache:YES url:urlStr];
+                self.networkTextView.text = @"网络异常，只加载缓存数据";
+                [self postWithCache:YES url:self.apiTextField.text];
                 break;
             case DKNetworkStatusReachableViaWWAN:
             case DKNetworkStatusReachableViaWiFi:
-                self.networkTextView.text = @"有网络了，正在请求网络数据";
-                [self postWithCache:[[NSUserDefaults standardUserDefaults] boolForKey:@"isOn"] url:urlStr];
+                self.networkTextView.text = @"网络正常，正在请求网络数据";
+                [self postWithCache:[[NSUserDefaults standardUserDefaults] boolForKey:@"isOn"] url:self.apiTextField.text];
                 break;
         }
     }];
@@ -119,16 +102,22 @@ static NSString * const downloadUrlStr = @"https://cdn.bingo.ren/protect/scp.png
 //    }
 //}
 
+- (IBAction)post
+{
+    self.networkTextView.text = @"Loading...";
+    [self postWithCache:[[NSUserDefaults standardUserDefaults] boolForKey:@"isOn"] url:self.apiTextField.text];
+}
+
 /** 下载 */
 - (IBAction)download
 {
     static NSURLSessionTask *task = nil;
     
-    if (!self.isDownload) { // 开始下载
-        self.download = YES;
-        [self.downloadBtn setTitle:@"取消下载" forState:UIControlStateNormal];
+    if (!self.isDownloading) { // 开始下载
+        self.downloading = YES;
+        [self.downloadBtn setTitle:@"Cancel" forState:UIControlStateNormal];
         
-        task = [DKNetworking downloadWithURL:downloadUrlStr fileDir:@"Download" progressBlock:^(NSProgress *progress) {
+        task = [DKNetworking downloadWithURL:self.downloadUrlTextField.text fileDir:@"Download" progressBlock:^(NSProgress *progress) {
             CGFloat stauts = 100.f * progress.completedUnitCount / progress.totalUnitCount;
             self.progressView.progress = stauts / 100.f;
             DKLog(@"下载进度:%.2f%%",stauts);
@@ -136,7 +125,7 @@ static NSString * const downloadUrlStr = @"https://cdn.bingo.ren/protect/scp.png
             if (!error) {
                 UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"下载完成!" message:[NSString stringWithFormat:@"文件路径:%@",filePath] delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil];
                 [alertView show];
-                [self.downloadBtn setTitle:@"重新下载" forState:UIControlStateNormal];
+                [self.downloadBtn setTitle:@"Re Download" forState:UIControlStateNormal];
                 DKLog(@"filePath = %@",filePath);
             } else {
                 UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"下载失败" message:[NSString stringWithFormat:@"%@",error] delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil];
@@ -144,11 +133,11 @@ static NSString * const downloadUrlStr = @"https://cdn.bingo.ren/protect/scp.png
                 DKLog(@"error = %@",error);
             }
         }];
-    } else { // 暂停下载
-        self.download = NO;
+    } else { // 停止下载
+        self.downloading = NO;
         [task suspend];
         self.progressView.progress = 0;
-        [self.downloadBtn setTitle:@"开始下载" forState:UIControlStateNormal];
+        [self.downloadBtn setTitle:@"Download" forState:UIControlStateNormal];
     }
 }
 
@@ -156,11 +145,12 @@ static NSString * const downloadUrlStr = @"https://cdn.bingo.ren/protect/scp.png
 
 - (IBAction)isCache:(UISwitch *)sender
 {
+    self.cacheStatusLabel.text = sender.isOn ? @"Cache Open" : @"Cache Close";
+    self.cacheSwitch.on = sender.isOn;
+    
     NSUserDefaults *userDefault = [NSUserDefaults standardUserDefaults];
     [userDefault setBool:sender.isOn forKey:@"isOn"];
     [userDefault synchronize];
-    
-    [self postWithCache:sender.isOn url:urlStr];
 }
 
 @end

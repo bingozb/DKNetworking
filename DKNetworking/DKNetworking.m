@@ -10,34 +10,39 @@
 #import "AFNetworking.h"
 
 #define DKHTTPRequest(Method) \
-if (cacheBlock) \
-cacheBlock([DKNetworkCache httpCacheForURL:URL parameters:parameters]); \
+    if (_cacheType == DKNetworkCacheTypeCacheNetwork) \
+        callback([DKNetworkCache httpCacheForURL:URL parameters:parameters], nil); \
 NSURLSessionTask *sessionTask = [_sessionManager Method:URL parameters:parameters progress:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) { \
-    [[self allSessionTask] removeObject:task]; \
-    if (_isOpenLog) \
-        DKLog(@"%@",[responseObject dk_jsonString]); \
-    if (callback) \
-        callback(responseObject, nil); \
-    if (cacheBlock) \
+        [[self allSessionTask] removeObject:task]; \
+        if (_isOpenLog) \
+            DKLog(@"%@",[responseObject dk_jsonString]); \
+        if (callback) \
+                callback(responseObject, nil); \
         [DKNetworkCache setHttpCache:responseObject URL:URL parameters:parameters]; \
-} failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) { \
-    [[self allSessionTask] removeObject:task]; \
-    if (_isOpenLog) \
-        DKLog(@"%@",error); \
-    if (callback) \
-        callback(nil, error); \
-}]; \
-[[self allSessionTask] addObject:sessionTask]; \
+    } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) { \
+        [[self allSessionTask] removeObject:task]; \
+        if (_isOpenLog) \
+            DKLog(@"%@",error); \
+        if (callback) \
+            callback(nil, error); \
+    }]; \
+    [[self allSessionTask] addObject:sessionTask]; \
 return sessionTask;
 
 @implementation DKNetworking
 
 static BOOL _isOpenLog;
+static DKNetworkCacheType _cacheType;
 static NSMutableArray<NSURLSessionTask *> *_allSessionTask;
 static AFHTTPSessionManager *_sessionManager;
 
 static NSString *const kDefaultDownloadDir = @"Download";
 static CGFloat const kDefaultTimeoutInterval = 10.f;
+
++ (void)setupCacheType:(DKNetworkCacheType)cacheType
+{
+    _cacheType = cacheType;
+}
 
 #pragma mark - Network Status
 
@@ -95,20 +100,10 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 
 + (NSURLSessionTask *)GET:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKHttpRequestBlock)callback
 {
-    return [self GET:URL parameters:parameters cacheBlock:nil callback:callback];
-}
-
-+ (NSURLSessionTask *)POST:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKHttpRequestBlock)callback
-{
-    return [self POST:URL parameters:parameters cacheBlock:nil callback:callback];
-}
-
-+ (NSURLSessionTask *)GET:(NSString *)URL parameters:(NSDictionary *)parameters cacheBlock:(DKHttpRequestCacheBlock)cacheBlock callback:(DKHttpRequestBlock)callback
-{
     DKHTTPRequest(GET)
 }
 
-+ (NSURLSessionTask *)POST:(NSString *)URL parameters:(NSDictionary *)parameters cacheBlock:(DKHttpRequestCacheBlock)cacheBlock callback:(DKHttpRequestBlock)callback
++ (NSURLSessionTask *)POST:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKHttpRequestBlock)callback
 {
     DKHTTPRequest(POST)
 }

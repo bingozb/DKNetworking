@@ -18,6 +18,13 @@
 #endif
 #endif
 
+typedef NS_ENUM(NSUInteger, DKNetworkCacheType) {
+    /** 只加载网络数据 */
+    DKNetworkCacheTypeNetworkOnly,
+    /** 先加载缓存,然后加载网络 */
+    DKNetworkCacheTypeCacheNetwork
+};
+
 typedef NS_ENUM(NSUInteger, DKNetworkStatus) {
     /** 未知网络 */
     DKNetworkStatusUnknown,
@@ -48,11 +55,8 @@ typedef NS_ENUM(NSUInteger, DKResponseSerializer) {
 /** 请求回调Block */
 typedef void(^DKHttpRequestBlock)(NSDictionary *responseObject, NSError *error);
 
-/** 缓存的Block */
-typedef void(^DKHttpRequestCacheBlock)(NSDictionary *responseCache);
-
 /** 
- * 上传或者下载的进度回调
+ * 上传或者下载的进度回调Block
  * Progress.completedUnitCount : 当前大小
  * Progress.totalUnitCount : 总大小
  */
@@ -61,7 +65,17 @@ typedef void(^DKHttpProgressBlock)(NSProgress *progress);
 /** 网络状态的Block */
 typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
 
+/**
+ 基于 AFN + YYCache 的第一层封装类
+ */
 @interface DKNetworking : NSObject
+
+/**
+ 设置缓存类型
+
+ @param cacheType 缓存类型
+ */
++ (void)setupCacheType:(DKNetworkCacheType)cacheType;
 
 #pragma mark - Network Status
 
@@ -100,7 +114,7 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
 #pragma mark - Request Method
 
 /**
- GET请求，不缓存
+ GET请求
 
  @param URL 请求地址
  @param parameters 请求参数
@@ -112,21 +126,7 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
                  callback:(DKHttpRequestBlock)callback;
 
 /**
- GET请求，自动缓存
-
- @param URL 请求地址
- @param parameters 请求参数
- @param cacheBlock 缓存回调
- @param callback 请求回调
- @return 返回的对象可取消请求,调用cancel方法
- */
-+ (NSURLSessionTask *)GET:(NSString *)URL
-               parameters:(NSDictionary *)parameters
-               cacheBlock:(DKHttpRequestCacheBlock)cacheBlock
-                 callback:(DKHttpRequestBlock)callback;
-
-/**
- POST请求，不缓存
+ POST请求
  
  @param URL 请求地址
  @param parameters 请求参数
@@ -134,22 +134,8 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
  @return 返回的对象可取消请求,调用cancel方法
  */
 + (NSURLSessionTask *)POST:(NSString *)URL
-               parameters:(NSDictionary *)parameters
-                 callback:(DKHttpRequestBlock)callback;
-
-/**
- POST请求，自动缓存
- 
- @param URL 请求地址
- @param parameters 请求参数
- @param cacheBlock 缓存回调
- @param callback 请求回调
- @return 返回的对象可取消请求,调用cancel方法
- */
-+ (NSURLSessionTask *)POST:(NSString *)URL
-               parameters:(NSDictionary *)parameters
-               cacheBlock:(DKHttpRequestCacheBlock)cacheBlock
-                 callback:(DKHttpRequestBlock)callback;
+                parameters:(NSDictionary *)parameters
+                  callback:(DKHttpRequestBlock)callback;
 
 /**
  上传文件

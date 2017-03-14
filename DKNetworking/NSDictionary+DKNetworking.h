@@ -1,6 +1,6 @@
 //
 //  NSDictionary+DKNetworking.h
-//  DKNetworkingExample
+//  DKNetworking
 //
 //  Created by 庄槟豪 on 2017/2/26.
 //  Copyright © 2017年 cn.dankal. All rights reserved.
