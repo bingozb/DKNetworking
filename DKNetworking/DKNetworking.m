@@ -147,7 +147,7 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
     NSURLSessionTask *sessionTask = [_sessionManager POST:URL parameters:parameters constructingBodyWithBlock:^(id<AFMultipartFormData>  _Nonnull formData) {
         for (NSUInteger i = 0; i < images.count; i++) {
             NSData *imageData = UIImageJPEGRepresentation(images[i], imageScale ?: 1.f);
-            NSString *timeStampImageName = [NSString stringWithFormat:@"%ld%ld.%@",(long)[[NSDate date] timeIntervalSince1970], i, imageType ?: @"jpg"];
+            NSString *timeStampImageName = [NSString stringWithFormat:@"%f%ld.%@",[[NSDate date] timeIntervalSince1970], i, imageType ?: @"jpg"];
             NSString *fileName = fileNames ? [NSString stringWithFormat:@"%@.%@", fileNames[i], imageType ?: @"jpg"] : timeStampImageName;
             NSString *mimeType = [NSString stringWithFormat:@"image/%@",imageType ?: @"jpg"];
             [formData appendPartWithFileData:imageData name:name fileName:fileName mimeType:mimeType];
