@@ -53,13 +53,22 @@
 {
     [DKNetworking setupCacheType:isOn ? DKNetworkCacheTypeCacheNetwork : DKNetworkCacheTypeNetworkOnly];
     
-    [DKNetworking POST:url parameters:nil callback:^(DKNetworkResponse *response) {
+//    [DKNetworking POST:url parameters:nil callback:^(DKNetworkResponse *response) {
+//        if (!response.error) {
+//            self.networkTextView.text = [response.rawData dk_jsonString];
+//        } else {
+//            self.networkTextView.text = response.error.description;
+//        }
+//    }];
+    
+    // 链式调用
+    [DKNetworking networkManager].method(@"POST").url(url).callback(^(DKNetworkResponse *response) {
         if (!response.error) {
             self.networkTextView.text = [response.rawData dk_jsonString];
         } else {
             self.networkTextView.text = response.error.description;
         }
-    }];
+    });
 }
 
 /**

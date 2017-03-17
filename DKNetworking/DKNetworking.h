@@ -13,19 +13,19 @@
 #import "NSDictionary+DKNetworking.h"
 #import "DKNetworkResponse.h"
 
-// TODO NOTE: 暂时不能 import request
+@class DKNetworkRequest;
 
 #pragma mark - Block
 
 /** 请求回调Block */
-typedef void(^DKHttpRequestBlock)(DKNetworkResponse *response);
+typedef void(^DKNetworkBlock)(DKNetworkResponse *response);
 
 /** 
  * 上传或者下载的进度回调Block
  * Progress.completedUnitCount : 当前大小
  * Progress.totalUnitCount : 总大小
  */
-typedef void(^DKHttpProgressBlock)(NSProgress *progress);
+typedef void(^DKNetworkProgressBlock)(NSProgress *progress);
 
 /** 网络状态的Block */
 typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
@@ -34,6 +34,11 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
  基于 AFN + YYCache 的第一层封装类
  */
 @interface DKNetworking : NSObject
+
+/**
+ 单例对象
+ */
++ (instancetype)networkManager;
 
 /**
  设置缓存类型
@@ -78,6 +83,29 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
 
 #pragma mark - Request Method
 
+#pragma mark 链式调用
+
+/** 链式调用 */
+- (DKNetworking * (^)(NSString *method))method;
+- (DKNetworking * (^)(NSString *url))url;
+- (DKNetworking * (^)(NSDictionary *params))params;
+- (DKNetworking * (^)(NSDictionary *header))header;
+- (DKNetworking * (^)(DKNetworkCacheType cacheType))cacheType;
+- (DKNetworking * (^)(DKRequestSerializer requestSerializer))requestSerializer;
+- (void (^)(DKNetworkBlock networkBlock))callback;
+
+#pragma mark 常规调用
+
+/**
+ 发起一个请求
+
+ @param request 请求对象
+ @param callback 请求响应回调
+ @return 返回的对象可取消请求,调用cancel方法
+ */
++ (NSURLSessionTask *)request:(DKNetworkRequest *)request callback:(DKNetworkBlock)callback;
+- (NSURLSessionTask *)request:(DKNetworkRequest *)request callback:(DKNetworkBlock)callback;
+
 /**
  GET请求
 
@@ -86,7 +114,8 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
  @param callback 请求回调
  @return 返回的对象可取消请求,调用cancel方法
  */
-+ (NSURLSessionTask *)GET:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKHttpRequestBlock)callback;
++ (NSURLSessionTask *)GET:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback;
+- (NSURLSessionTask *)GET:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback;
 
 /**
  POST请求
@@ -96,7 +125,8 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
  @param callback 请求回调
  @return 返回的对象可取消请求,调用cancel方法
  */
-+ (NSURLSessionTask *)POST:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKHttpRequestBlock)callback;
++ (NSURLSessionTask *)POST:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback;
+- (NSURLSessionTask *)POST:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback;
 
 /**
  PUT请求
@@ -106,7 +136,8 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
  @param callback 请求回调
  @return 返回的对象可取消请求,调用cancel方法
  */
-+ (NSURLSessionTask *)PUT:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKHttpRequestBlock)callback;
++ (NSURLSessionTask *)PUT:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback;
+- (NSURLSessionTask *)PUT:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback;
 
 /**
  DELETE请求
@@ -116,7 +147,8 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
  @param callback 请求回调
  @return 返回的对象可取消请求,调用cancel方法
  */
-+ (NSURLSessionTask *)DELETE:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKHttpRequestBlock)callback;
++ (NSURLSessionTask *)DELETE:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback;
+- (NSURLSessionTask *)DELETE:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback;
 
 /**
  PATCH请求
@@ -126,7 +158,8 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
  @param callback 请求回调
  @return 返回的对象可取消请求,调用cancel方法
  */
-+ (NSURLSessionTask *)PATCH:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKHttpRequestBlock)callback;
++ (NSURLSessionTask *)PATCH:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback;
+- (NSURLSessionTask *)PATCH:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback;
 
 /**
  上传文件
@@ -143,8 +176,8 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
                              parameters:(NSDictionary *)parameters
                                    name:(NSString *)name
                                filePath:(NSString *)filePath
-                          progressBlock:(DKHttpProgressBlock)progressBlock
-                               callback:(DKHttpRequestBlock)callback;
+                          progressBlock:(DKNetworkProgressBlock)progressBlock
+                               callback:(DKNetworkBlock)callback;
 
 /**
  上传图片
@@ -167,8 +200,8 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
                                 fileNames:(NSArray<NSString *> *)fileNames
                                imageScale:(CGFloat)imageScale
                                 imageType:(NSString *)imageType
-                            progressBlock:(DKHttpProgressBlock)progressBlock
-                                 callback:(DKHttpRequestBlock)callback;
+                            progressBlock:(DKNetworkProgressBlock)progressBlock
+                                 callback:(DKNetworkBlock)callback;
 
 /**
  下载文件
@@ -181,7 +214,7 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
  */
 + (NSURLSessionTask *)downloadWithURL:(NSString *)URL
                               fileDir:(NSString *)fileDir
-                        progressBlock:(DKHttpProgressBlock)progressBlock
+                        progressBlock:(DKNetworkProgressBlock)progressBlock
                              callback:(void(^)(NSString *filePath, NSError *error))callback;
 
 #pragma mark - Cancel Request

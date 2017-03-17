@@ -8,6 +8,7 @@
 
 #import "DKNetworking.h"
 #import "AFNetworking.h"
+#import "DKNetworkRequest.h"
 
 #define KResponse(rawData, error) [DKNetworkResponse responseWithRawData:rawData error:error]
 
@@ -15,31 +16,53 @@
 if (_networkCacheType == DKNetworkCacheTypeCacheNetwork && callback) \
     callback([DKNetworkResponse responseWithRawData:DKNCache(URL, parameters) error:nil]); \
 NSURLSessionTask *sessionTask = [_sessionManager Method:URL parameters:parameters success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) { \
-    [[self allSessionTask] removeObject:task]; \
+    [[DKNetworking allSessionTask] removeObject:task]; \
     if (_isOpenLog) \
         DKLog(@"%@",[responseObject dk_jsonString]); \
     if (callback) \
         callback([DKNetworkResponse responseWithRawData:DKNCache(URL, parameters) error:nil]); \
     [DKNetworkCache setHttpCache:responseObject URL:URL parameters:parameters]; \
 } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) { \
-    [[self allSessionTask] removeObject:task]; \
+    [[DKNetworking allSessionTask] removeObject:task]; \
     if (_isOpenLog) \
         DKLog(@"%@",error); \
     if (callback) \
         callback([DKNetworkResponse responseWithRawData:nil error:error]); \
 }]; \
-[[self allSessionTask] addObject:sessionTask]; \
+[[DKNetworking allSessionTask] addObject:sessionTask]; \
 return sessionTask;
+
+@interface DKNetworking ()
+@property (nonatomic, strong) DKNetworkRequest *request;
+@end
 
 @implementation DKNetworking
 
 static BOOL _isOpenLog;
 static DKNetworkCacheType _networkCacheType;
+static DKNetworking *_networkManager;
 static NSMutableArray<NSURLSessionTask *> *_allSessionTask;
 static AFHTTPSessionManager *_sessionManager;
 
 static NSString *const kDefaultDownloadDir = @"Download";
 static CGFloat const kDefaultTimeoutInterval = 10.f;
+
++ (id)allocWithZone:(struct _NSZone *)zone
+{
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        _networkManager = [super allocWithZone:zone];
+    });
+    return _networkManager;
+}
+
++ (instancetype)networkManager
+{
+    if (_networkManager == nil) {
+        _networkManager = [[self alloc] init];
+    }
+    return _networkManager;
+}
 
 + (void)setupCacheType:(DKNetworkCacheType)cacheType
 {
@@ -100,39 +123,148 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 
 #pragma mark - Request Method
 
+#pragma mark 链式调用
+
+- (DKNetworking * (^)(NSString *))method
+{
+    return ^DKNetworking *(NSString *method){
+        self.request.method = method;
+        return self;
+    };
+}
+
+- (DKNetworking * (^)(NSString *))url
+{
+    return ^DKNetworking *(NSString *url){
+        self.request.urlStr = url;
+        return self;
+    };
+}
+
+- (DKNetworking * (^)(NSDictionary *))params
+{
+    return ^DKNetworking *(NSDictionary *params){
+        self.request.params = params;
+        return self;
+    };
+}
+
+- (DKNetworking * (^)(NSDictionary *))header
+{
+    return ^DKNetworking *(NSDictionary *header){
+        self.request.header = header;
+        return self;
+    };
+}
+
+- (DKNetworking * (^)(DKNetworkCacheType))cacheType
+{
+    return ^DKNetworking *(DKNetworkCacheType cacheType){
+        self.request.cacheType = cacheType;
+        return self;
+    };
+}
+
+- (DKNetworking * (^)(DKRequestSerializer requestSerializer))requestSerializer
+{
+    return ^DKNetworking *(DKRequestSerializer requestSerializer){
+        self.request.requestSerializer = requestSerializer;
+        return self;
+    };
+}
+
+- (void (^)(DKNetworkBlock))callback
+{
+    return ^void(DKNetworkBlock block){
+        [self request:self.request callback:^(DKNetworkResponse *response) {
+            self.request = nil;
+            block(response);
+        }];
+    };
+}
+
+#pragma mark 常规调用
+
++ (NSURLSessionTask *)request:(DKNetworkRequest *)request callback:(DKNetworkBlock)callback
+{
+    NSString *method = request.method;
+    if ([method isEqualToString:@"GET"]) {
+        return [self GET:request.urlStr parameters:request.params callback:callback];
+    } else if ([method isEqualToString:@"POST"]) {
+        return [self POST:request.urlStr parameters:request.params callback:callback];
+    } else if ([method isEqualToString:@"PUT"]) {
+        return [self PUT:request.urlStr parameters:request.params callback:callback];
+    } else if ([method isEqualToString:@"DELETE"]) {
+        return [self DELETE:request.urlStr parameters:request.params callback:callback];
+    } else if ([method isEqualToString:@"PATCH"]) {
+        return [self PATCH:request.urlStr parameters:request.params callback:callback];
+    }
+    return nil;
+}
+
+- (NSURLSessionTask *)request:(DKNetworkRequest *)request callback:(DKNetworkBlock)callback
+{
+    return [DKNetworking request:request callback:callback];
+}
+
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 
-+ (NSURLSessionTask *)GET:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKHttpRequestBlock)callback
++ (NSURLSessionTask *)GET:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback
 {
     KCallRequest(GET)
 }
 
-+ (NSURLSessionTask *)POST:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKHttpRequestBlock)callback
+- (NSURLSessionTask *)GET:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback
+{
+    return [DKNetworking GET:URL parameters:parameters callback:callback];
+}
+
++ (NSURLSessionTask *)POST:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback
 {
     KCallRequest(POST)
 }
 
+- (NSURLSessionTask *)POST:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback
+{
+    return [DKNetworking POST:URL parameters:parameters callback:callback];
+}
+
 #pragma clang diagnostic pop
 
-+ (NSURLSessionTask *)PUT:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKHttpRequestBlock)callback
++ (NSURLSessionTask *)PUT:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback
 {
     KCallRequest(PUT)
 }
 
-+ (NSURLSessionTask *)DELETE:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKHttpRequestBlock)callback
+- (NSURLSessionTask *)PUT:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback
+{
+    return [DKNetworking PUT:URL parameters:parameters callback:callback];
+}
+
++ (NSURLSessionTask *)DELETE:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback
 {
     KCallRequest(DELETE)
 }
 
-+ (NSURLSessionTask *)PATCH:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKHttpRequestBlock)callback
+- (NSURLSessionTask *)DELETE:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback
+{
+    return [DKNetworking DELETE:URL parameters:parameters callback:callback];
+}
+
++ (NSURLSessionTask *)PATCH:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback
 {
     KCallRequest(PATCH)
 }
 
+- (NSURLSessionTask *)PATCH:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback
+{
+    return [DKNetworking PATCH:URL parameters:parameters callback:callback];
+}
+
 #pragma mark - Upload
 
-+ (NSURLSessionTask *)uploadFileWithURL:(NSString *)URL parameters:(NSDictionary *)parameters name:(NSString *)name filePath:(NSString *)filePath progressBlock:(DKHttpProgressBlock)progressBlock callback:(DKHttpRequestBlock)callback
++ (NSURLSessionTask *)uploadFileWithURL:(NSString *)URL parameters:(NSDictionary *)parameters name:(NSString *)name filePath:(NSString *)filePath progressBlock:(DKNetworkProgressBlock)progressBlock callback:(DKNetworkBlock)callback
 {
     NSURLSessionTask *sessionTask = [_sessionManager POST:URL parameters:parameters constructingBodyWithBlock:^(id<AFMultipartFormData>  _Nonnull formData) {
         NSError *error = nil;
@@ -164,7 +296,7 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
     return sessionTask;
 }
 
-+ (NSURLSessionTask *)uploadImagesWithURL:(NSString *)URL parameters:(NSDictionary *)parameters name:(NSString *)name images:(NSArray<UIImage *> *)images fileNames:(NSArray<NSString *> *)fileNames imageScale:(CGFloat)imageScale imageType:(NSString *)imageType progressBlock:(DKHttpProgressBlock)progressBlock callback:(DKHttpRequestBlock)callback
++ (NSURLSessionTask *)uploadImagesWithURL:(NSString *)URL parameters:(NSDictionary *)parameters name:(NSString *)name images:(NSArray<UIImage *> *)images fileNames:(NSArray<NSString *> *)fileNames imageScale:(CGFloat)imageScale imageType:(NSString *)imageType progressBlock:(DKNetworkProgressBlock)progressBlock callback:(DKNetworkBlock)callback
 {
     NSURLSessionTask *sessionTask = [_sessionManager POST:URL parameters:parameters constructingBodyWithBlock:^(id<AFMultipartFormData>  _Nonnull formData) {
         for (NSUInteger i = 0; i < images.count; i++) {
@@ -200,7 +332,7 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 
 #pragma mark - Download
 
-+ (NSURLSessionTask *)downloadWithURL:(NSString *)URL fileDir:(NSString *)fileDir progressBlock:(DKHttpProgressBlock)progressBlock callback:(void (^)(NSString *, NSError *))callback
++ (NSURLSessionTask *)downloadWithURL:(NSString *)URL fileDir:(NSString *)fileDir progressBlock:(DKNetworkProgressBlock)progressBlock callback:(void (^)(NSString *, NSError *))callback
 {
     NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:URL]];
     NSURLSessionDownloadTask *downloadTask = [_sessionManager downloadTaskWithRequest:request progress:^(NSProgress * _Nonnull downloadProgress) {
@@ -308,6 +440,14 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
         _allSessionTask = [[NSMutableArray alloc] init];
     }
     return _allSessionTask;
+}
+
+- (DKNetworkRequest *)request
+{
+    if (!_request) {
+        _request = [[DKNetworkRequest alloc] init];
+    }
+    return _request;
 }
 
 @end
