@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D73CF7111E7C6A9C00A896C6 /* DKNetworkLogManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D73CF7101E7C6A9C00A896C6 /* DKNetworkLogManager.m */; };
 		D7ACFC631E616D70000BE551 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D7ACFC611E616D70000BE551 /* Main.storyboard */; };
 		D7ACFC651E616D70000BE551 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D7ACFC641E616D70000BE551 /* Assets.xcassets */; };
 		D7ACFC681E616D70000BE551 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D7ACFC661E616D70000BE551 /* LaunchScreen.storyboard */; };
@@ -60,6 +61,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		D73CF70F1E7C6A9C00A896C6 /* DKNetworkLogManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DKNetworkLogManager.h; sourceTree = "<group>"; };
+		D73CF7101E7C6A9C00A896C6 /* DKNetworkLogManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DKNetworkLogManager.m; sourceTree = "<group>"; };
 		D7ACFC551E616D70000BE551 /* DKNetworkingExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DKNetworkingExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D7ACFC621E616D70000BE551 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		D7ACFC641E616D70000BE551 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -321,6 +324,8 @@
 				D7C824631E70F97600FBC33F /* DKNetworking.m */,
 				D7C824601E70F97600FBC33F /* DKNetworkCache.h */,
 				D7C824611E70F97600FBC33F /* DKNetworkCache.m */,
+				D73CF70F1E7C6A9C00A896C6 /* DKNetworkLogManager.h */,
+				D73CF7101E7C6A9C00A896C6 /* DKNetworkLogManager.m */,
 				D7C824641E70F97600FBC33F /* NSDictionary+DKNetworking.h */,
 				D7C824651E70F97600FBC33F /* NSDictionary+DKNetworking.m */,
 			);
@@ -493,6 +498,7 @@
 				D7C8248E1E71018100FBC33F /* MJFoundation.m in Sources */,
 				D7C8246F1E70F9B400FBC33F /* main.m in Sources */,
 				D7ACFD101E6175AB000BE551 /* UIImageView+AFNetworking.m in Sources */,
+				D73CF7111E7C6A9C00A896C6 /* DKNetworkLogManager.m in Sources */,
 				D7C824701E70F9B400FBC33F /* ViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

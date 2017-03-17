@@ -8,15 +8,8 @@
 
 #import <UIKit/UIKit.h>
 #import "DKNetworkCache.h"
+#import "DKNetworkLogManager.h"
 #import "NSDictionary+DKNetworking.h"
-
-#ifndef DKLog
-#ifdef DEBUG
-#define DKLog(...) printf("[%s] %s 第%d行: %s\n", __TIME__, __func__, __LINE__, [[NSString stringWithFormat:__VA_ARGS__] UTF8String])
-#else
-#define DKLog(...)
-#endif
-#endif
 
 typedef NS_ENUM(NSUInteger, DKNetworkCacheType) {
     /** 只加载网络数据 */
@@ -121,9 +114,7 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
  @param callback 请求回调
  @return 返回的对象可取消请求,调用cancel方法
  */
-+ (NSURLSessionTask *)GET:(NSString *)URL
-               parameters:(NSDictionary *)parameters
-                 callback:(DKHttpRequestBlock)callback;
++ (NSURLSessionTask *)GET:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKHttpRequestBlock)callback;
 
 /**
  POST请求
@@ -133,9 +124,37 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
  @param callback 请求回调
  @return 返回的对象可取消请求,调用cancel方法
  */
-+ (NSURLSessionTask *)POST:(NSString *)URL
-                parameters:(NSDictionary *)parameters
-                  callback:(DKHttpRequestBlock)callback;
++ (NSURLSessionTask *)POST:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKHttpRequestBlock)callback;
+
+/**
+ PUT请求
+ 
+ @param URL 请求地址
+ @param parameters 请求参数
+ @param callback 请求回调
+ @return 返回的对象可取消请求,调用cancel方法
+ */
++ (NSURLSessionTask *)PUT:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKHttpRequestBlock)callback;
+
+/**
+ DELETE请求
+ 
+ @param URL 请求地址
+ @param parameters 请求参数
+ @param callback 请求回调
+ @return 返回的对象可取消请求,调用cancel方法
+ */
++ (NSURLSessionTask *)DELETE:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKHttpRequestBlock)callback;
+
+/**
+ PATCH请求
+ 
+ @param URL 请求地址
+ @param parameters 请求参数
+ @param callback 请求回调
+ @return 返回的对象可取消请求,调用cancel方法
+ */
++ (NSURLSessionTask *)PATCH:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKHttpRequestBlock)callback;
 
 /**
  上传文件
@@ -217,7 +236,7 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
 /**
  设置服务器响应数据格式 : 默认为JSON格式
 
- @param responseSerializer DKResponseSerializerJSON : JSON格式, DKResponseSerializerHTTP : 二进制格式
+ @param responseSerializer DKResponseSerializerJSON:JSON格式, DKResponseSerializerHTTP:二进制格式
  */
 + (void)setResponseSerializer:(DKResponseSerializer)responseSerializer;
 

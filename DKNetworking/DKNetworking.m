@@ -12,12 +12,12 @@
 #define DKHTTPRequest(Method) \
     if (_cacheType == DKNetworkCacheTypeCacheNetwork) \
         callback([DKNetworkCache httpCacheForURL:URL parameters:parameters], nil); \
-NSURLSessionTask *sessionTask = [_sessionManager Method:URL parameters:parameters progress:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) { \
+NSURLSessionTask *sessionTask = [_sessionManager Method:URL parameters:parameters success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) { \
         [[self allSessionTask] removeObject:task]; \
         if (_isOpenLog) \
             DKLog(@"%@",[responseObject dk_jsonString]); \
         if (callback) \
-                callback(responseObject, nil); \
+            callback(responseObject, nil); \
         [DKNetworkCache setHttpCache:responseObject URL:URL parameters:parameters]; \
     } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) { \
         [[self allSessionTask] removeObject:task]; \
@@ -98,6 +98,9 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 
 #pragma mark - Request Method
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 + (NSURLSessionTask *)GET:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKHttpRequestBlock)callback
 {
     DKHTTPRequest(GET)
@@ -106,6 +109,23 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 + (NSURLSessionTask *)POST:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKHttpRequestBlock)callback
 {
     DKHTTPRequest(POST)
+}
+
+#pragma clang diagnostic pop
+
++ (NSURLSessionTask *)PUT:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKHttpRequestBlock)callback
+{
+    DKHTTPRequest(PUT)
+}
+
++ (NSURLSessionTask *)DELETE:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKHttpRequestBlock)callback
+{
+    DKHTTPRequest(DELETE)
+}
+
++ (NSURLSessionTask *)PATCH:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKHttpRequestBlock)callback
+{
+    DKHTTPRequest(PATCH)
 }
 
 #pragma mark - Upload

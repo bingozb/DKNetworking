@@ -41,7 +41,7 @@
 + (void)httpCacheForURL:(NSString *)URL parameters:(NSDictionary *)parameters withBlock:(void(^)(id<NSCoding> object))block;
 
 /**
- 获取网络缓存的总大小 动态单位(TB,MB,KB,B)
+ 获取网络缓存的总大小 动态单位(GB,MB,KB,B)
 
  @return 网络缓存的总大小
  */
