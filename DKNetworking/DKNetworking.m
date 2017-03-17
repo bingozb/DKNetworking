@@ -125,49 +125,46 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 
 #pragma mark 链式调用
 
-- (DKNetworking *(^)())get
-{
-    return ^DKNetworking *(){
-        self.request.method = DKNetworkRequestMethodGET;
-        return self;
-    };
-}
-
-- (DKNetworking *(^)())post
-{
-    return ^DKNetworking *(){
-        self.request.method = DKNetworkRequestMethodPOST;
-        return self;
-    };
-}
-
-- (DKNetworking *(^)())put
-{
-    return ^DKNetworking *(){
-        self.request.method = DKNetworkRequestMethodPUT;
-        return self;
-    };
-}
-
-- (DKNetworking *(^)())delete
-{
-    return ^DKNetworking *(){
-        self.request.method = DKNetworkRequestMethodDELETE;
-        return self;
-    };
-}
-
-- (DKNetworking *(^)())patch
-{
-    return ^DKNetworking *(){
-        self.request.method = DKNetworkRequestMethodPATCH;
-        return self;
-    };
-}
-
-- (DKNetworking * (^)(NSString *))url
+- (DKNetworking *(^)(NSString *))get
 {
     return ^DKNetworking *(NSString *url){
+        self.request.method = DKNetworkRequestMethodGET;
+        self.request.urlStr = url;
+        return self;
+    };
+}
+
+- (DKNetworking *(^)(NSString *))post
+{
+    return ^DKNetworking *(NSString *url){
+        self.request.method = DKNetworkRequestMethodPOST;
+        self.request.urlStr = url;
+        return self;
+    };
+}
+
+- (DKNetworking *(^)(NSString *))put
+{
+    return ^DKNetworking *(NSString *url){
+        self.request.method = DKNetworkRequestMethodPUT;
+        self.request.urlStr = url;
+        return self;
+    };
+}
+
+- (DKNetworking *(^)(NSString *))delete
+{
+    return ^DKNetworking *(NSString *url){
+        self.request.method = DKNetworkRequestMethodDELETE;
+        self.request.urlStr = url;
+        return self;
+    };
+}
+
+- (DKNetworking *(^)(NSString *))patch
+{
+    return ^DKNetworking *(NSString *url){
+        self.request.method = DKNetworkRequestMethodPATCH;
         self.request.urlStr = url;
         return self;
     };

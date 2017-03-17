@@ -71,7 +71,7 @@
         }
     };
     
-    [DKNetworking networkManager].post().url(url).callback(callback);
+    [DKNetworking networkManager].post(url).callback(callback);
 }
 
 /**

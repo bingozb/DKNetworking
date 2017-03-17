@@ -86,12 +86,11 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
 #pragma mark 链式调用
 
 /** 链式调用 */
-- (DKNetworking * (^)())get;
-- (DKNetworking * (^)())post;
-- (DKNetworking * (^)())put;
-- (DKNetworking * (^)())delete;
-- (DKNetworking * (^)())patch;
-- (DKNetworking * (^)(NSString *url))url;
+- (DKNetworking * (^)(NSString *url))get;
+- (DKNetworking * (^)(NSString *url))post;
+- (DKNetworking * (^)(NSString *url))put;
+- (DKNetworking * (^)(NSString *url))delete;
+- (DKNetworking * (^)(NSString *url))patch;
 - (DKNetworking * (^)(NSDictionary *params))params;
 - (DKNetworking * (^)(NSDictionary *header))header;
 - (DKNetworking * (^)(DKNetworkCacheType cacheType))cacheType;
