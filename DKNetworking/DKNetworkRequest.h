@@ -15,7 +15,7 @@
 @property (nonatomic, copy) NSString *urlStr;
 
 /** 请求方法 */
-@property (nonatomic, copy) NSString *method;
+@property (nonatomic, assign) DKNetworkRequestMethod method;
 
 /** 请求头 */
 @property (nonatomic, strong) NSDictionary *header;
@@ -41,7 +41,7 @@
  @return 网络请求对象
  */
 + (instancetype)requestWithUrlStr:(NSString *)urlStr
-                           method:(NSString *)method
+                           method:(DKNetworkRequestMethod)method
                            params:(NSDictionary *)params
                            header:(NSDictionary *)header
                         cacheType:(DKNetworkCacheType)cacheType

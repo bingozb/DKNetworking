@@ -53,6 +53,7 @@
 {
     [DKNetworking setupCacheType:isOn ? DKNetworkCacheTypeCacheNetwork : DKNetworkCacheTypeNetworkOnly];
     
+    // 常规调用
 //    [DKNetworking POST:url parameters:nil callback:^(DKNetworkResponse *response) {
 //        if (!response.error) {
 //            self.networkTextView.text = [response.rawData dk_jsonString];
@@ -62,13 +63,15 @@
 //    }];
     
     // 链式调用
-    [DKNetworking networkManager].method(@"POST").url(url).callback(^(DKNetworkResponse *response) {
+    DKNetworkBlock callback = ^(DKNetworkResponse *response) {
         if (!response.error) {
             self.networkTextView.text = [response.rawData dk_jsonString];
         } else {
             self.networkTextView.text = response.error.description;
         }
-    });
+    };
+    
+    [DKNetworking networkManager].post().url(url).callback(callback);
 }
 
 /**

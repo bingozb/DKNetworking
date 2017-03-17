@@ -41,4 +41,17 @@ typedef NS_ENUM(NSUInteger, DKResponseSerializer) {
     DKResponseSerializerHTTP,
 };
 
+typedef NS_ENUM(NSUInteger, DKNetworkRequestMethod) {
+    /** GET请求 */
+    DKNetworkRequestMethodGET,
+    /** POST请求 */
+    DKNetworkRequestMethodPOST,
+    /** PUT请求 */
+    DKNetworkRequestMethodPUT,
+    /** DELETE请求 */
+    DKNetworkRequestMethodDELETE,
+    /** PATCH请求 */
+    DKNetworkRequestMethodPATCH
+};
+
 #endif /* DKNetworkEnum_h */

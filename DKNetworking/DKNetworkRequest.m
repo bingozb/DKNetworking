@@ -10,7 +10,7 @@
 
 @implementation DKNetworkRequest
 
-+ (instancetype)requestWithUrlStr:(NSString *)urlStr method:(NSString *)method params:(NSDictionary *)params header:(NSDictionary *)header cacheType:(DKNetworkCacheType)cacheType requestSerializer:(DKRequestSerializer)requestSerializer
++ (instancetype)requestWithUrlStr:(NSString *)urlStr method:(DKNetworkRequestMethod)method params:(NSDictionary *)params header:(NSDictionary *)header cacheType:(DKNetworkCacheType)cacheType requestSerializer:(DKRequestSerializer)requestSerializer
 {
     DKNetworkRequest *request = [[self alloc] init];
     request.urlStr = urlStr;

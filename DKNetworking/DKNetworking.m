@@ -125,10 +125,42 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 
 #pragma mark 链式调用
 
-- (DKNetworking * (^)(NSString *))method
+- (DKNetworking *(^)())get
 {
-    return ^DKNetworking *(NSString *method){
-        self.request.method = method;
+    return ^DKNetworking *(){
+        self.request.method = DKNetworkRequestMethodGET;
+        return self;
+    };
+}
+
+- (DKNetworking *(^)())post
+{
+    return ^DKNetworking *(){
+        self.request.method = DKNetworkRequestMethodPOST;
+        return self;
+    };
+}
+
+- (DKNetworking *(^)())put
+{
+    return ^DKNetworking *(){
+        self.request.method = DKNetworkRequestMethodPUT;
+        return self;
+    };
+}
+
+- (DKNetworking *(^)())delete
+{
+    return ^DKNetworking *(){
+        self.request.method = DKNetworkRequestMethodDELETE;
+        return self;
+    };
+}
+
+- (DKNetworking *(^)())patch
+{
+    return ^DKNetworking *(){
+        self.request.method = DKNetworkRequestMethodPATCH;
         return self;
     };
 }
@@ -187,18 +219,24 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 
 + (NSURLSessionTask *)request:(DKNetworkRequest *)request callback:(DKNetworkBlock)callback
 {
-    NSString *method = request.method;
-    if ([method isEqualToString:@"GET"]) {
-        return [self GET:request.urlStr parameters:request.params callback:callback];
-    } else if ([method isEqualToString:@"POST"]) {
-        return [self POST:request.urlStr parameters:request.params callback:callback];
-    } else if ([method isEqualToString:@"PUT"]) {
-        return [self PUT:request.urlStr parameters:request.params callback:callback];
-    } else if ([method isEqualToString:@"DELETE"]) {
-        return [self DELETE:request.urlStr parameters:request.params callback:callback];
-    } else if ([method isEqualToString:@"PATCH"]) {
-        return [self PATCH:request.urlStr parameters:request.params callback:callback];
+    switch (request.method) {
+        case DKNetworkRequestMethodGET:
+            return [self GET:request.urlStr parameters:request.params callback:callback];
+            break;
+        case DKNetworkRequestMethodPOST:
+            return [self POST:request.urlStr parameters:request.params callback:callback];
+            break;
+        case DKNetworkRequestMethodPUT:
+            return [self PUT:request.urlStr parameters:request.params callback:callback];
+            break;
+        case DKNetworkRequestMethodDELETE:
+            return [self DELETE:request.urlStr parameters:request.params callback:callback];
+            break;
+        case DKNetworkRequestMethodPATCH:
+            return [self PATCH:request.urlStr parameters:request.params callback:callback];
+            break;
     }
+    
     return nil;
 }
 
