@@ -53,14 +53,13 @@
 {
     [DKNetworking setupCacheType:isOn ? DKNetworkCacheTypeCacheNetwork : DKNetworkCacheTypeNetworkOnly];
     
-    [DKNetworking POST:url parameters:nil callback:^(NSDictionary *responseObject, NSError *error) {
-        if (!error) {
-            self.networkTextView.text = [responseObject dk_jsonString];
+    [DKNetworking POST:url parameters:nil callback:^(DKNetworkResponse *response) {
+        if (!response.error) {
+            self.networkTextView.text = [response.rawData dk_jsonString];
         } else {
-            self.networkTextView.text = error.description;
+            self.networkTextView.text = response.error.description;
         }
     }];
-    
 }
 
 /**

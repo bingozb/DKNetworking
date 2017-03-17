@@ -8,45 +8,17 @@
 
 #import <UIKit/UIKit.h>
 #import "DKNetworkCache.h"
+#import "DKNetworkEnum.h"
 #import "DKNetworkLogManager.h"
 #import "NSDictionary+DKNetworking.h"
+#import "DKNetworkResponse.h"
 
-typedef NS_ENUM(NSUInteger, DKNetworkCacheType) {
-    /** 只加载网络数据 */
-    DKNetworkCacheTypeNetworkOnly,
-    /** 先加载缓存,然后加载网络 */
-    DKNetworkCacheTypeCacheNetwork
-};
-
-typedef NS_ENUM(NSUInteger, DKNetworkStatus) {
-    /** 未知网络 */
-    DKNetworkStatusUnknown,
-    /** 无网络 */
-    DKNetworkStatusNotReachable,
-    /** 手机网络 */
-    DKNetworkStatusReachableViaWWAN,
-    /** WIFI网络 */
-    DKNetworkStatusReachableViaWiFi
-};
-
-typedef NS_ENUM(NSUInteger, DKRequestSerializer) {
-    /** 请求数据为JSON格式 */
-    DKRequestSerializerJSON,
-    /** 请求数据为二进制格式 */
-    DKRequestSerializerHTTP,
-};
-
-typedef NS_ENUM(NSUInteger, DKResponseSerializer) {
-    /** 响应数据为JSON格式*/
-    DKResponseSerializerJSON,
-    /** 响应数据为二进制格式*/
-    DKResponseSerializerHTTP,
-};
+// TODO NOTE: 暂时不能 import request
 
 #pragma mark - Block
 
 /** 请求回调Block */
-typedef void(^DKHttpRequestBlock)(NSDictionary *responseObject, NSError *error);
+typedef void(^DKHttpRequestBlock)(DKNetworkResponse *response);
 
 /** 
  * 上传或者下载的进度回调Block

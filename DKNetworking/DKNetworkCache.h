@@ -8,6 +8,8 @@
 
 #import <Foundation/Foundation.h>
 
+#define DKNCache(URL,parameters) [DKNetworkCache httpCacheForURL:URL parameters:parameters]
+
 /**
  网络数据缓存类
  */
