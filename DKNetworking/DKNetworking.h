@@ -9,31 +9,42 @@
 #import <UIKit/UIKit.h>
 #import "DKNetworkEnum.h"
 #import "DKNetworkCache.h"
+#import "DKNetworkRequest.h"
 #import "DKNetworkResponse.h"
 #import "DKNetworkLogManager.h"
 #import "NSDictionary+DKNetworking.h"
 
-@class DKNetworkRequest;
-
-#pragma mark - Block
-
-/** 请求回调Block */
-typedef void(^DKNetworkBlock)(DKNetworkResponse *response);
-
-/** 
- * 上传或者下载的进度回调Block
- * Progress.completedUnitCount : 当前大小
- * Progress.totalUnitCount : 总大小
- */
-typedef void(^DKNetworkProgressBlock)(NSProgress *progress);
+typedef NSTimeInterval DKRequestTimeoutInterval;
 
 /** 网络状态的Block */
 typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
 
+/** 请求回调Block */
+typedef void(^DKNetworkBlock)(DKNetworkRequest *request, DKNetworkResponse *response);
+
+/** 
+ 上传或者下载的进度回调Block
+    Progress.completedUnitCount : 当前大小
+    Progress.totalUnitCount     : 总大小
+ */
+typedef void(^DKNetworkProgressBlock)(NSProgress *progress);
+
 /**
- 基于 AFN + YYCache 的第一层封装类
+ 基于 AFN + YYCache 的网络层封装类
  */
 @interface DKNetworking : NSObject
+
+/** 缓存方式 */
+@property (nonatomic, assign, readonly) DKNetworkCacheType networkCacheType;
+/** 请求序列化格式 */
+@property (nonatomic, assign, readonly) DKRequestSerializer networkRequestSerializer;
+/** 响应序列化格式 */
+@property (nonatomic, assign, readonly) DKResponseSerializer networkResponseSerializer;
+/** 请求超时时间 */
+@property (nonatomic, assign, readonly) DKRequestTimeoutInterval networkRequestTimeoutInterval;
+/** 请求头 */
+@property (nonatomic, strong, readonly) NSDictionary *networkHeader;
+
 
 /**
  单例对象
@@ -50,7 +61,7 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
 #pragma mark - Network Status
 
 /**
- 有网:YES, 无网:NO
+ 有网络:YES, 无网络:NO
  */
 + (BOOL)isNetworking;
 
@@ -86,16 +97,18 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
 #pragma mark 链式调用
 
 /** 链式调用 */
-- (DKNetworking * (^)(NSString *url))get;
-- (DKNetworking * (^)(NSString *url))post;
-- (DKNetworking * (^)(NSString *url))put;
-- (DKNetworking * (^)(NSString *url))delete;
-- (DKNetworking * (^)(NSString *url))patch;
-- (DKNetworking * (^)(NSDictionary *params))params;
-- (DKNetworking * (^)(NSDictionary *header))header;
-- (DKNetworking * (^)(DKNetworkCacheType cacheType))cacheType;
-- (DKNetworking * (^)(DKRequestSerializer requestSerializer))requestSerializer;
-- (void (^)(DKNetworkBlock networkBlock))callback;
+- (DKNetworking *(^)(NSString *url))get;
+- (DKNetworking *(^)(NSString *url))post;
+- (DKNetworking *(^)(NSString *url))put;
+- (DKNetworking *(^)(NSString *url))delete;
+- (DKNetworking *(^)(NSString *url))patch;
+- (DKNetworking *(^)(NSDictionary *params))params;
+- (DKNetworking *(^)(NSDictionary *header))header;
+- (DKNetworking *(^)(DKNetworkCacheType cacheType))cacheType;
+- (DKNetworking *(^)(DKRequestSerializer requestSerializer))requestSerializer;
+- (DKNetworking *(^)(DKResponseSerializer responseSerializer))responseSerializer;
+- (DKNetworking *(^)(DKRequestTimeoutInterval requestTimeoutInterval))requestTimeoutInterval;
+- (void(^)(DKNetworkBlock networkBlock))callback;
 
 #pragma mark 常规调用
 
@@ -180,7 +193,7 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
                                    name:(NSString *)name
                                filePath:(NSString *)filePath
                           progressBlock:(DKNetworkProgressBlock)progressBlock
-                               callback:(DKNetworkBlock)callback;
+                               callback:(void(^)(DKNetworkResponse *response))callback;
 
 /**
  上传图片
@@ -204,7 +217,7 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
                                imageScale:(CGFloat)imageScale
                                 imageType:(NSString *)imageType
                             progressBlock:(DKNetworkProgressBlock)progressBlock
-                                 callback:(DKNetworkBlock)callback;
+                                 callback:(void(^)(DKNetworkResponse *response))callback;
 
 /**
  下载文件

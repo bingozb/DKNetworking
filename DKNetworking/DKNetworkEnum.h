@@ -28,17 +28,17 @@ typedef NS_ENUM(NSUInteger, DKNetworkStatus) {
 };
 
 typedef NS_ENUM(NSUInteger, DKRequestSerializer) {
-    /** 请求数据为JSON格式 */
-    DKRequestSerializerJSON,
     /** 请求数据为二进制格式 */
     DKRequestSerializerHTTP,
+    /** 请求数据为JSON格式 */
+    DKRequestSerializerJSON
 };
 
 typedef NS_ENUM(NSUInteger, DKResponseSerializer) {
     /** 响应数据为JSON格式*/
     DKResponseSerializerJSON,
     /** 响应数据为二进制格式*/
-    DKResponseSerializerHTTP,
+    DKResponseSerializerHTTP
 };
 
 typedef NS_ENUM(NSUInteger, DKNetworkRequestMethod) {
