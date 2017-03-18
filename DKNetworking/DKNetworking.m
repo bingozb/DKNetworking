@@ -21,7 +21,7 @@ NSURLSessionTask *sessionTask = [_sessionManager Method:URL parameters:parameter
         DKLog(@"%@",[responseObject dk_jsonString]); \
     if (callback) \
         callback([DKNetworkResponse responseWithRawData:DKNCache(URL, parameters) error:nil]); \
-    [DKNetworkCache setHttpCache:responseObject URL:URL parameters:parameters]; \
+    [DKNetworkCache setCache:responseObject URL:URL parameters:parameters]; \
 } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) { \
     [[DKNetworking allSessionTask] removeObject:task]; \
     if (_isOpenLog) \

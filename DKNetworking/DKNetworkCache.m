@@ -8,29 +8,31 @@
 
 #import "DKNetworkCache.h"
 #import "YYCache.h"
+#import "NSString+DKNetworking.h"
 
 #define KCacheKey [self cacheKeyWithURL:URL parameters:parameters]
 
 @implementation DKNetworkCache
-static NSString *const DKNetworkResponseCacheKey = @"DKNetworkResponseCache";
+
+static NSString *const kNetworkResponseCacheKey = @"DKNetworkResponseCache";
 static YYCache *_cacheManager;
 
 + (void)initialize
 {
-    _cacheManager = [YYCache cacheWithName:DKNetworkResponseCacheKey];
+    _cacheManager = [YYCache cacheWithName:kNetworkResponseCacheKey];
 }
 
-+ (void)setHttpCache:(NSDictionary *)responseObject URL:(NSString *)URL parameters:(NSDictionary *)parameters
++ (void)setCache:(NSDictionary *)responseObject URL:(NSString *)URL parameters:(NSDictionary *)parameters
 {
     [_cacheManager setObject:responseObject forKey:KCacheKey withBlock:nil];
 }
 
-+ (NSDictionary *)httpCacheForURL:(NSString *)URL parameters:(NSDictionary *)parameters
++ (NSDictionary *)cacheForURL:(NSString *)URL parameters:(NSDictionary *)parameters
 {
     return (NSDictionary *)[_cacheManager objectForKey:KCacheKey];
 }
 
-+ (void)httpCacheForURL:(NSString *)URL parameters:(NSDictionary *)parameters withBlock:(void(^)(id<NSCoding> object))block
++ (void)cacheForURL:(NSString *)URL parameters:(NSDictionary *)parameters withBlock:(void(^)(id<NSCoding> object))block
 {
     [_cacheManager objectForKey:KCacheKey withBlock:^(NSString * _Nonnull key, id<NSCoding>  _Nonnull object) {
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -60,12 +62,13 @@ static YYCache *_cacheManager;
 
 + (NSString *)cacheKeyWithURL:(NSString *)URL parameters:(NSDictionary *)parameters
 {
-    if(!parameters) return URL;
+    if (!parameters) return URL;
     
     NSData *stringData = [NSJSONSerialization dataWithJSONObject:parameters options:0 error:nil];
     NSString *paramString = [[NSString alloc] initWithData:stringData encoding:NSUTF8StringEncoding];
+    NSString *cacheKey = [NSString stringWithFormat:@"%@%@",URL,paramString];
     
-    return [NSString stringWithFormat:@"%@%@",URL,paramString];
+    return [cacheKey dk_md5];
 }
 
 @end

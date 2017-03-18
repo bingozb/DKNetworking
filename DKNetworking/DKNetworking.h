@@ -7,11 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "DKNetworkCache.h"
 #import "DKNetworkEnum.h"
+#import "DKNetworkCache.h"
+#import "DKNetworkResponse.h"
 #import "DKNetworkLogManager.h"
 #import "NSDictionary+DKNetworking.h"
-#import "DKNetworkResponse.h"
 
 @class DKNetworkRequest;
 
