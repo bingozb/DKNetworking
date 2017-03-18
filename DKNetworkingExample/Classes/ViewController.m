@@ -33,11 +33,13 @@
     
     [DKNetworking setupCacheType:DKNetworkCacheTypeCacheNetwork];
     
-    // 获取网络缓存大小
-    DKLog(@"cacheSize = %@",[DKNetworkCache cacheSize]);
+//    [DKNetworking setupBaseURL:@"https://m.sfddj.com/app/v1/"];
     
     // 清理缓存
 //    [DKNetworkCache clearCache];
+    
+    // 获取网络缓存大小
+    DKLog(@"cacheSize = %@",[DKNetworkCache cacheSize]);
     
     // 实时监测网络状态
     [self monitorNetworkStatus];
@@ -53,14 +55,24 @@
 {
     [DKNetworking setupCacheType:isOn ? DKNetworkCacheTypeCacheNetwork : DKNetworkCacheTypeNetworkOnly];
     
-    [DKNetworking POST:url parameters:nil callback:^(NSDictionary *responseObject, NSError *error) {
-        if (!error) {
-            self.networkTextView.text = [responseObject dk_jsonString];
-        } else {
-            self.networkTextView.text = error.description;
-        }
-    }];
+    // 常规调用
+//    [DKNetworking POST:url parameters:nil callback:^(DKNetworkRequest *request, DKNetworkResponse *response) {
+//        if (!response.error) {
+//            self.networkTextView.text = [response.rawData dk_jsonString];
+//        } else {
+//            self.networkTextView.text = response.error.description;
+//        }
+//    }];
     
+    // 链式调用
+    DKNetworkBlock callback = ^(DKNetworkRequest *request, DKNetworkResponse *response) {
+        if (!response.error) {
+            self.networkTextView.text = [response.rawData dk_jsonString];
+        } else {
+            self.networkTextView.text = response.error.description;
+        }
+    };
+    [DKNetworking networkManager].post(url).callback(callback);
 }
 
 /**

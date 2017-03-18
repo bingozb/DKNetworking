@@ -7,68 +7,55 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "DKNetworkEnum.h"
 #import "DKNetworkCache.h"
+#import "DKNetworkRequest.h"
+#import "DKNetworkResponse.h"
+#import "DKNetworkLogManager.h"
 #import "NSDictionary+DKNetworking.h"
 
-#ifndef DKLog
-#ifdef DEBUG
-#define DKLog(...) printf("[%s] %s 第%d行: %s\n", __TIME__, __func__, __LINE__, [[NSString stringWithFormat:__VA_ARGS__] UTF8String])
-#else
-#define DKLog(...)
-#endif
-#endif
-
-typedef NS_ENUM(NSUInteger, DKNetworkCacheType) {
-    /** 只加载网络数据 */
-    DKNetworkCacheTypeNetworkOnly,
-    /** 先加载缓存,然后加载网络 */
-    DKNetworkCacheTypeCacheNetwork
-};
-
-typedef NS_ENUM(NSUInteger, DKNetworkStatus) {
-    /** 未知网络 */
-    DKNetworkStatusUnknown,
-    /** 无网络 */
-    DKNetworkStatusNotReachable,
-    /** 手机网络 */
-    DKNetworkStatusReachableViaWWAN,
-    /** WIFI网络 */
-    DKNetworkStatusReachableViaWiFi
-};
-
-typedef NS_ENUM(NSUInteger, DKRequestSerializer) {
-    /** 请求数据为JSON格式 */
-    DKRequestSerializerJSON,
-    /** 请求数据为二进制格式 */
-    DKRequestSerializerHTTP,
-};
-
-typedef NS_ENUM(NSUInteger, DKResponseSerializer) {
-    /** 响应数据为JSON格式*/
-    DKResponseSerializerJSON,
-    /** 响应数据为二进制格式*/
-    DKResponseSerializerHTTP,
-};
-
-#pragma mark - Block
-
-/** 请求回调Block */
-typedef void(^DKHttpRequestBlock)(NSDictionary *responseObject, NSError *error);
-
-/** 
- * 上传或者下载的进度回调Block
- * Progress.completedUnitCount : 当前大小
- * Progress.totalUnitCount : 总大小
- */
-typedef void(^DKHttpProgressBlock)(NSProgress *progress);
+typedef NSTimeInterval DKRequestTimeoutInterval;
 
 /** 网络状态的Block */
 typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
 
+/** 请求回调Block */
+typedef void(^DKNetworkBlock)(DKNetworkRequest *request, DKNetworkResponse *response);
+
+/** 
+ 上传或者下载的进度回调Block
+    Progress.completedUnitCount : 当前大小
+    Progress.totalUnitCount     : 总大小
+ */
+typedef void(^DKNetworkProgressBlock)(NSProgress *progress);
+
 /**
- 基于 AFN + YYCache 的第一层封装类
+ 基于 AFN + YYCache 的网络层封装类
  */
 @interface DKNetworking : NSObject
+
+/** 缓存方式 */
+@property (nonatomic, assign, readonly) DKNetworkCacheType networkCacheType;
+/** 请求序列化格式 */
+@property (nonatomic, assign, readonly) DKRequestSerializer networkRequestSerializer;
+/** 响应序列化格式 */
+@property (nonatomic, assign, readonly) DKResponseSerializer networkResponseSerializer;
+/** 请求超时时间 */
+@property (nonatomic, assign, readonly) DKRequestTimeoutInterval networkRequestTimeoutInterval;
+/** 请求头 */
+@property (nonatomic, strong, readonly) NSDictionary *networkHeader;
+
+/**
+ 单例对象
+ */
++ (instancetype)networkManager;
+
+/**
+ 设置接口根路径, 设置后所有的网络访问都用相对路径
+    baseURL的路径一定要有"/"结尾
+ @param baseURL 根路径
+ */
++ (void)setupBaseURL:(NSString *)baseURL;
 
 /**
  设置缓存类型
@@ -80,7 +67,7 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
 #pragma mark - Network Status
 
 /**
- 有网:YES, 无网:NO
+ 有网络:YES, 无网络:NO
  */
 + (BOOL)isNetworking;
 
@@ -113,6 +100,34 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
 
 #pragma mark - Request Method
 
+#pragma mark 链式调用
+
+/** 链式调用 */
+- (DKNetworking *(^)(NSString *url))get;
+- (DKNetworking *(^)(NSString *url))post;
+- (DKNetworking *(^)(NSString *url))put;
+- (DKNetworking *(^)(NSString *url))delete;
+- (DKNetworking *(^)(NSString *url))patch;
+- (DKNetworking *(^)(NSDictionary *params))params;
+- (DKNetworking *(^)(NSDictionary *header))header;
+- (DKNetworking *(^)(DKNetworkCacheType cacheType))cacheType;
+- (DKNetworking *(^)(DKRequestSerializer requestSerializer))requestSerializer;
+- (DKNetworking *(^)(DKResponseSerializer responseSerializer))responseSerializer;
+- (DKNetworking *(^)(DKRequestTimeoutInterval requestTimeoutInterval))requestTimeoutInterval;
+- (void(^)(DKNetworkBlock networkBlock))callback;
+
+#pragma mark 常规调用
+
+/**
+ 发起一个请求
+
+ @param request 请求对象
+ @param callback 请求响应回调
+ @return 返回的对象可取消请求,调用cancel方法
+ */
++ (NSURLSessionTask *)request:(DKNetworkRequest *)request callback:(DKNetworkBlock)callback;
+- (NSURLSessionTask *)request:(DKNetworkRequest *)request callback:(DKNetworkBlock)callback;
+
 /**
  GET请求
 
@@ -121,9 +136,8 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
  @param callback 请求回调
  @return 返回的对象可取消请求,调用cancel方法
  */
-+ (NSURLSessionTask *)GET:(NSString *)URL
-               parameters:(NSDictionary *)parameters
-                 callback:(DKHttpRequestBlock)callback;
++ (NSURLSessionTask *)GET:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback;
+- (NSURLSessionTask *)GET:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback;
 
 /**
  POST请求
@@ -133,9 +147,41 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
  @param callback 请求回调
  @return 返回的对象可取消请求,调用cancel方法
  */
-+ (NSURLSessionTask *)POST:(NSString *)URL
-                parameters:(NSDictionary *)parameters
-                  callback:(DKHttpRequestBlock)callback;
++ (NSURLSessionTask *)POST:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback;
+- (NSURLSessionTask *)POST:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback;
+
+/**
+ PUT请求
+ 
+ @param URL 请求地址
+ @param parameters 请求参数
+ @param callback 请求回调
+ @return 返回的对象可取消请求,调用cancel方法
+ */
++ (NSURLSessionTask *)PUT:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback;
+- (NSURLSessionTask *)PUT:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback;
+
+/**
+ DELETE请求
+ 
+ @param URL 请求地址
+ @param parameters 请求参数
+ @param callback 请求回调
+ @return 返回的对象可取消请求,调用cancel方法
+ */
++ (NSURLSessionTask *)DELETE:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback;
+- (NSURLSessionTask *)DELETE:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback;
+
+/**
+ PATCH请求
+ 
+ @param URL 请求地址
+ @param parameters 请求参数
+ @param callback 请求回调
+ @return 返回的对象可取消请求,调用cancel方法
+ */
++ (NSURLSessionTask *)PATCH:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback;
+- (NSURLSessionTask *)PATCH:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback;
 
 /**
  上传文件
@@ -152,8 +198,8 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
                              parameters:(NSDictionary *)parameters
                                    name:(NSString *)name
                                filePath:(NSString *)filePath
-                          progressBlock:(DKHttpProgressBlock)progressBlock
-                               callback:(DKHttpRequestBlock)callback;
+                          progressBlock:(DKNetworkProgressBlock)progressBlock
+                               callback:(void(^)(DKNetworkResponse *response))callback;
 
 /**
  上传图片
@@ -176,8 +222,8 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
                                 fileNames:(NSArray<NSString *> *)fileNames
                                imageScale:(CGFloat)imageScale
                                 imageType:(NSString *)imageType
-                            progressBlock:(DKHttpProgressBlock)progressBlock
-                                 callback:(DKHttpRequestBlock)callback;
+                            progressBlock:(DKNetworkProgressBlock)progressBlock
+                                 callback:(void(^)(DKNetworkResponse *response))callback;
 
 /**
  下载文件
@@ -190,7 +236,7 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
  */
 + (NSURLSessionTask *)downloadWithURL:(NSString *)URL
                               fileDir:(NSString *)fileDir
-                        progressBlock:(DKHttpProgressBlock)progressBlock
+                        progressBlock:(DKNetworkProgressBlock)progressBlock
                              callback:(void(^)(NSString *filePath, NSError *error))callback;
 
 #pragma mark - Cancel Request
@@ -217,7 +263,7 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
 /**
  设置服务器响应数据格式 : 默认为JSON格式
 
- @param responseSerializer DKResponseSerializerJSON : JSON格式, DKResponseSerializerHTTP : 二进制格式
+ @param responseSerializer DKResponseSerializerJSON:JSON格式, DKResponseSerializerHTTP:二进制格式
  */
 + (void)setResponseSerializer:(DKResponseSerializer)responseSerializer;
 
@@ -229,8 +275,18 @@ typedef void(^DKNetworkStatusBlock)(DKNetworkStatus status);
 + (void)setRequestTimeoutInterval:(NSTimeInterval)time;
 
 /**
- 设置请求头
+ 设置一对请求头参数
+
+ @param value 请求头参数值
+ @param field 请求头参数名
  */
 + (void)setValue:(NSString *)value forHTTPHeaderField:(NSString *)field;
+
+/**
+ 设置多对请求头参数
+
+ @param networkHeader 请求头参数字典
+ */
++ (void)setNetworkHeader:(NSDictionary *)networkHeader;
 
 @end
