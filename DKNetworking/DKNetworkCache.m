@@ -8,7 +8,7 @@
 
 #import "DKNetworkCache.h"
 #import "YYCache.h"
-#import "NSString+DKNetworking.h"
+#import <CommonCrypto/CommonDigest.h>
 
 #define KCacheKey [self cacheKeyWithURL:URL parameters:parameters]
 
@@ -68,7 +68,26 @@ static YYCache *_cacheManager;
     NSString *paramString = [[NSString alloc] initWithData:stringData encoding:NSUTF8StringEncoding];
     NSString *cacheKey = [NSString stringWithFormat:@"%@%@",URL,paramString];
     
-    return [cacheKey dk_md5];
+    return [self dk_md5:cacheKey];
+}
+
+/**
+ MD5加密
+
+ @param input 待加密字符串
+ @return MD5加密后的字符串
+ */
++ (NSString *)dk_md5:(NSString *)input
+{
+    const char *cStr = [[input dataUsingEncoding:NSUTF8StringEncoding] bytes];
+    unsigned char digest[16];
+    CC_MD5(cStr, (uint32_t)[[input dataUsingEncoding:NSUTF8StringEncoding] length], digest);
+    
+    NSMutableString *output = [NSMutableString stringWithCapacity:CC_MD5_DIGEST_LENGTH * 2];
+    for (int i = 0; i < CC_MD5_DIGEST_LENGTH; i++) {
+        [output appendFormat:@"%02x", digest[i]];
+    }
+    return output;
 }
 
 @end

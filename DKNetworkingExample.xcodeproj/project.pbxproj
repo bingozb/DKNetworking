@@ -10,7 +10,6 @@
 		D73CF7111E7C6A9C00A896C6 /* DKNetworkLogManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D73CF7101E7C6A9C00A896C6 /* DKNetworkLogManager.m */; };
 		D73CF7171E7C7AD600A896C6 /* DKNetworkRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = D73CF7161E7C7AD600A896C6 /* DKNetworkRequest.m */; };
 		D73CF71B1E7C7F6800A896C6 /* DKNetworkResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = D73CF71A1E7C7F6800A896C6 /* DKNetworkResponse.m */; };
-		D73CF7211E7D1AB700A896C6 /* NSString+DKNetworking.m in Sources */ = {isa = PBXBuildFile; fileRef = D73CF7201E7D1AB700A896C6 /* NSString+DKNetworking.m */; };
 		D73CF7241E7D7CF000A896C6 /* DKNetworkSessionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D73CF7231E7D7CF000A896C6 /* DKNetworkSessionManager.m */; };
 		D7ACFC631E616D70000BE551 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D7ACFC611E616D70000BE551 /* Main.storyboard */; };
 		D7ACFC651E616D70000BE551 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D7ACFC641E616D70000BE551 /* Assets.xcassets */; };
@@ -346,8 +345,6 @@
 				D7C824611E70F97600FBC33F /* DKNetworkCache.m */,
 				D73CF70F1E7C6A9C00A896C6 /* DKNetworkLogManager.h */,
 				D73CF7101E7C6A9C00A896C6 /* DKNetworkLogManager.m */,
-				D73CF71F1E7D1AB700A896C6 /* NSString+DKNetworking.h */,
-				D73CF7201E7D1AB700A896C6 /* NSString+DKNetworking.m */,
 				D7C824641E70F97600FBC33F /* NSDictionary+DKNetworking.h */,
 				D7C824651E70F97600FBC33F /* NSDictionary+DKNetworking.m */,
 			);
@@ -659,6 +656,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
 				DEVELOPMENT_TEAM = G8M2K7562P;
 				INFOPLIST_FILE = DKNetworkingExample/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
@@ -672,6 +670,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
 				DEVELOPMENT_TEAM = G8M2K7562P;
 				INFOPLIST_FILE = DKNetworkingExample/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
