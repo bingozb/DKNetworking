@@ -71,6 +71,8 @@
 		D73CF7181E7C7CEC00A896C6 /* DKNetworkEnum.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DKNetworkEnum.h; sourceTree = "<group>"; };
 		D73CF7191E7C7F6800A896C6 /* DKNetworkResponse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DKNetworkResponse.h; sourceTree = "<group>"; };
 		D73CF71A1E7C7F6800A896C6 /* DKNetworkResponse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DKNetworkResponse.m; sourceTree = "<group>"; };
+		D73CF71F1E7D1AB700A896C6 /* NSString+DKNetworking.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+DKNetworking.h"; sourceTree = "<group>"; };
+		D73CF7201E7D1AB700A896C6 /* NSString+DKNetworking.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+DKNetworking.m"; sourceTree = "<group>"; };
 		D73CF7221E7D7CF000A896C6 /* DKNetworkSessionManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DKNetworkSessionManager.h; sourceTree = "<group>"; };
 		D73CF7231E7D7CF000A896C6 /* DKNetworkSessionManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DKNetworkSessionManager.m; sourceTree = "<group>"; };
 		D7ACFC551E616D70000BE551 /* DKNetworkingExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DKNetworkingExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -505,6 +507,7 @@
 				D7ACFD0E1E6175AB000BE551 /* UIActivityIndicatorView+AFNetworking.m in Sources */,
 				D7ACFD0D1E6175AB000BE551 /* AFNetworkActivityIndicatorManager.m in Sources */,
 				D7C8248D1E71018100FBC33F /* MJExtensionConst.m in Sources */,
+				D73CF7211E7D1AB700A896C6 /* NSString+DKNetworking.m in Sources */,
 				D7ACFD0B1E6175AB000BE551 /* AFAutoPurgingImageCache.m in Sources */,
 				D7C824681E70F97600FBC33F /* NSDictionary+DKNetworking.m in Sources */,
 				D7ACFD081E6175AB000BE551 /* AFURLRequestSerialization.m in Sources */,
