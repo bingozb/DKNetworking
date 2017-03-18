@@ -13,7 +13,7 @@
 #define KRequest(URL, Method, Params) [DKNetworkRequest requestWithUrlStr:URL method:Method params:Params]
 #define KResponse(RawData, Error) [DKNetworkResponse responseWithRawData:RawData error:Error]
 
-#define KNetworkSessionTask(Method) [[DKNetworking networkManager] Method:URL parameters:parameters callback:callback]
+#define KNetworkSessionTask(Method) [networkManager Method:URL parameters:parameters callback:callback]
 #define KNetworkSessionTaskInstance(Method) [self request:KRequest(URL, Method, parameters) callback:callback]
 
 @interface DKNetworking ()
@@ -53,7 +53,7 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 {
     networkCacheType = cacheType;
     
-    [[DKNetworking networkManager] setupCacheType:cacheType];
+    [networkManager setupCacheType:cacheType];
 }
 
 + (void)setupBaseURL:(NSString *)baseURL
@@ -234,17 +234,17 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 
 + (NSURLSessionTask *)request:(DKNetworkRequest *)request callback:(DKNetworkBlock)callback
 {
-    return [[DKNetworking networkManager] request:request callback:callback];
+    return [networkManager request:request callback:callback];
 }
 
 - (NSURLSessionTask *)request:(DKNetworkRequest *)request callback:(DKNetworkBlock)callback
 {
     NSAssert(request.urlStr.length, @"DKNetworking Error: URL can not be nil");
     
-    request.header = [DKNetworking networkManager].networkHeader;
-    request.cacheType = [DKNetworking networkManager].networkCacheType;
-    request.requestSerializer = [DKNetworking networkManager].networkRequestSerializer;
-    request.requestTimeoutInterval = [DKNetworking networkManager].networkRequestTimeoutInterval;
+    request.header = networkManager.networkHeader;
+    request.cacheType = networkManager.networkCacheType;
+    request.requestSerializer = networkManager.networkRequestSerializer;
+    request.requestTimeoutInterval = networkManager.networkRequestTimeoutInterval;
     
     NSString *URL = request.urlStr;
     NSDictionary *parameters = request.params;
@@ -359,7 +359,7 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
     NSURLSessionTask *sessionTask = [sessionManager POST:URL parameters:parameters constructingBodyWithBlock:^(id<AFMultipartFormData>  _Nonnull formData) {
         for (NSUInteger i = 0; i < images.count; i++) {
             NSData *imageData = UIImageJPEGRepresentation(images[i], imageScale ?: 1.f);
-            NSString *timeStampImageName = [NSString stringWithFormat:@"%f%ld.%@",[[NSDate date] timeIntervalSince1970], i, imageType ?: @"jpg"];
+            NSString *timeStampImageName = [NSString stringWithFormat:@"%f%ld.%@",[[NSDate date] timeIntervalSince1970], (unsigned long)i, imageType ?: @"jpg"];
             NSString *fileName = fileNames ? [NSString stringWithFormat:@"%@.%@", fileNames[i], imageType ?: @"jpg"] : timeStampImageName;
             NSString *mimeType = [NSString stringWithFormat:@"image/%@",imageType ?: @"jpg"];
             [formData appendPartWithFileData:imageData name:name fileName:fileName mimeType:mimeType];
@@ -467,14 +467,12 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 
 + (void)initSessionManager
 {
-    DKNetworking *networking = [DKNetworking networkManager];
+    sessionManager.requestSerializer = networkManager.networkRequestSerializer == DKRequestSerializerHTTP ? [AFHTTPRequestSerializer serializer] : [AFJSONRequestSerializer serializer];
+    sessionManager.responseSerializer = networkManager.networkResponseSerializer == DKResponseSerializerHTTP ? [AFHTTPResponseSerializer serializer] : [AFJSONResponseSerializer serializer];
+    sessionManager.requestSerializer.timeoutInterval = networkManager.networkRequestTimeoutInterval ?: kDefaultTimeoutInterval;
     
-    sessionManager.requestSerializer = networking.networkRequestSerializer == DKRequestSerializerHTTP ? [AFHTTPRequestSerializer serializer] : [AFJSONRequestSerializer serializer];
-    sessionManager.responseSerializer = networking.networkResponseSerializer == DKResponseSerializerHTTP ? [AFHTTPResponseSerializer serializer] : [AFJSONResponseSerializer serializer];
-    sessionManager.requestSerializer.timeoutInterval = networking.networkRequestTimeoutInterval ?: kDefaultTimeoutInterval;
-    
-    if (networking.networkHeader)
-        [networking.networkHeader enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id obj, BOOL * _Nonnull stop) {
+    if (networkManager.networkHeader)
+        [networkManager.networkHeader enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id obj, BOOL * _Nonnull stop) {
             [sessionManager.requestSerializer setValue:obj forHTTPHeaderField:key];
         }];
 }
@@ -483,7 +481,7 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 
 + (void)setRequestSerializer:(DKRequestSerializer)requestSerializer
 {
-    [[DKNetworking networkManager] setRequestSerializer:requestSerializer];
+    [networkManager setRequestSerializer:requestSerializer];
 }
 
 - (void)setRequestSerializer:(DKRequestSerializer)requestSerializer
@@ -495,7 +493,7 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 
 + (void)setResponseSerializer:(DKResponseSerializer)responseSerializer
 {
-    [[DKNetworking networkManager] setResponseSerializer:responseSerializer];
+    [networkManager setResponseSerializer:responseSerializer];
 }
 
 - (void)setResponseSerializer:(DKResponseSerializer)responseSerializer
@@ -507,7 +505,7 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 
 + (void)setRequestTimeoutInterval:(NSTimeInterval)time
 {
-    [[DKNetworking networkManager] setRequestTimeoutInterval:time];
+    [networkManager setRequestTimeoutInterval:time];
 }
 
 - (void)setRequestTimeoutInterval:(NSTimeInterval)time
@@ -519,7 +517,7 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 
 + (void)setValue:(NSString *)value forHTTPHeaderField:(NSString *)field
 {
-    [[DKNetworking networkManager] setValue:value forHTTPHeaderField:field];
+    [networkManager setValue:value forHTTPHeaderField:field];
 }
 
 - (void)setValue:(NSString *)value forHTTPHeaderField:(NSString *)field
