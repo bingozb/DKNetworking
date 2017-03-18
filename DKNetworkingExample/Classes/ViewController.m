@@ -33,11 +33,13 @@
     
     [DKNetworking setupCacheType:DKNetworkCacheTypeCacheNetwork];
     
-    // 获取网络缓存大小
-    DKLog(@"cacheSize = %@",[DKNetworkCache cacheSize]);
+//    [DKNetworking setupBaseURL:@"https://m.sfddj.com/app/v1/"];
     
     // 清理缓存
 //    [DKNetworkCache clearCache];
+    
+    // 获取网络缓存大小
+    DKLog(@"cacheSize = %@",[DKNetworkCache cacheSize]);
     
     // 实时监测网络状态
     [self monitorNetworkStatus];

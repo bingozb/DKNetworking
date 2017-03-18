@@ -45,11 +45,17 @@ typedef void(^DKNetworkProgressBlock)(NSProgress *progress);
 /** 请求头 */
 @property (nonatomic, strong, readonly) NSDictionary *networkHeader;
 
-
 /**
  单例对象
  */
 + (instancetype)networkManager;
+
+/**
+ 设置接口根路径, 设置后所有的网络访问都用相对路径
+    baseURL的路径一定要有"/"结尾
+ @param baseURL 根路径
+ */
++ (void)setupBaseURL:(NSString *)baseURL;
 
 /**
  设置缓存类型
@@ -269,8 +275,18 @@ typedef void(^DKNetworkProgressBlock)(NSProgress *progress);
 + (void)setRequestTimeoutInterval:(NSTimeInterval)time;
 
 /**
- 设置请求头
+ 设置一对请求头参数
+
+ @param value 请求头参数值
+ @param field 请求头参数名
  */
 + (void)setValue:(NSString *)value forHTTPHeaderField:(NSString *)field;
+
+/**
+ 设置多对请求头参数
+
+ @param networkHeader 请求头参数字典
+ */
++ (void)setNetworkHeader:(NSDictionary *)networkHeader;
 
 @end

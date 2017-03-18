@@ -17,11 +17,11 @@ typedef NS_ENUM(NSUInteger, DKNetworkCacheType) {
 };
 
 typedef NS_ENUM(NSUInteger, DKNetworkStatus) {
-    /** 未知网络 */
+    /** 网络状态未知 */
     DKNetworkStatusUnknown,
     /** 无网络 */
     DKNetworkStatusNotReachable,
-    /** 手机网络 */
+    /** 手机网络（蜂窝） */
     DKNetworkStatusReachableViaWWAN,
     /** WIFI网络 */
     DKNetworkStatusReachableViaWiFi
@@ -41,17 +41,17 @@ typedef NS_ENUM(NSUInteger, DKResponseSerializer) {
     DKResponseSerializerHTTP
 };
 
-typedef NS_ENUM(NSUInteger, DKNetworkRequestMethod) {
+typedef NS_ENUM(NSUInteger, DKRequestMethod) {
     /** GET请求 */
-    DKNetworkRequestMethodGET,
+    DKRequestMethodGET,
     /** POST请求 */
-    DKNetworkRequestMethodPOST,
+    DKRequestMethodPOST,
     /** PUT请求 */
-    DKNetworkRequestMethodPUT,
+    DKRequestMethodPUT,
     /** DELETE请求 */
-    DKNetworkRequestMethodDELETE,
+    DKRequestMethodDELETE,
     /** PATCH请求 */
-    DKNetworkRequestMethodPATCH
+    DKRequestMethodPATCH
 };
 
 #endif /* DKNetworkEnum_h */

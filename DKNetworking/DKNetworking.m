@@ -8,44 +8,26 @@
 
 #import "DKNetworking.h"
 #import "AFNetworking.h"
+#import "DKNetworkSessionManager.h"
 
 #define KRequest(URL, Method, Params) [DKNetworkRequest requestWithUrlStr:URL method:Method params:Params]
-#define KResponse(rawData, error) [DKNetworkResponse responseWithRawData:rawData error:error]
+#define KResponse(RawData, Error) [DKNetworkResponse responseWithRawData:RawData error:Error]
 
 #define KNetworkSessionTask(Method) [[DKNetworking networkManager] Method:URL parameters:parameters callback:callback]
 #define KNetworkSessionTaskInstance(Method) [self request:KRequest(URL, Method, parameters) callback:callback]
 
-#define KCallRequest(Method) \
-if (networkCacheType == DKNetworkCacheTypeCacheNetwork && callback) \
-    callback(request, [DKNetworkResponse responseWithRawData:DKNCache(URL, parameters) error:nil]); \
-NSURLSessionTask *sessionTask = [sessionManager Method:URL parameters:parameters success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) { \
-    [[DKNetworking allSessionTask] removeObject:task]; \
-    if (isOpenLog) \
-        DKLog(@"%@",[responseObject dk_jsonString]); \
-    if (callback) \
-        callback(request, [DKNetworkResponse responseWithRawData:DKNCache(URL, parameters) error:nil]); \
-    [DKNetworkCache setCache:responseObject URL:URL parameters:parameters]; \
-} failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) { \
-    [[DKNetworking allSessionTask] removeObject:task]; \
-    if (isOpenLog) \
-        DKLog(@"%@",error); \
-    if (callback) \
-        callback(request, [DKNetworkResponse responseWithRawData:nil error:error]); \
-}]; \
-[[DKNetworking allSessionTask] addObject:sessionTask]; \
-return sessionTask;
-
 @interface DKNetworking ()
 @property (nonatomic, strong) DKNetworkRequest *request;
+@property (nonatomic, strong) NSArray<NSString *> *methods;
 @end
 
 @implementation DKNetworking
 
 static BOOL isOpenLog;
-static DKNetworkCacheType networkCacheType;
 static DKNetworking *networkManager;
+static DKNetworkCacheType networkCacheType;
+static DKNetworkSessionManager *sessionManager;
 static NSMutableArray<NSURLSessionTask *> *allSessionTask;
-static AFHTTPSessionManager *sessionManager;
 
 static NSString *const kDefaultDownloadDir = @"Download";
 static CGFloat const kDefaultTimeoutInterval = 10.f;
@@ -72,6 +54,13 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
     networkCacheType = cacheType;
     
     [[DKNetworking networkManager] setupCacheType:cacheType];
+}
+
++ (void)setupBaseURL:(NSString *)baseURL
+{
+    sessionManager = [[DKNetworkSessionManager alloc] initWithBaseURL:[NSURL URLWithString:baseURL]];
+    
+    [self initSessionManager];
 }
 
 - (void)setupCacheType:(DKNetworkCacheType)cacheType
@@ -138,7 +127,7 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 - (DKNetworking *(^)(NSString *))get
 {
     return ^DKNetworking *(NSString *url){
-        self.request.method = DKNetworkRequestMethodGET;
+        self.request.method = DKRequestMethodGET;
         self.request.urlStr = url;
         return self;
     };
@@ -147,7 +136,7 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 - (DKNetworking *(^)(NSString *))post
 {
     return ^DKNetworking *(NSString *url){
-        self.request.method = DKNetworkRequestMethodPOST;
+        self.request.method = DKRequestMethodPOST;
         self.request.urlStr = url;
         return self;
     };
@@ -156,7 +145,7 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 - (DKNetworking *(^)(NSString *))put
 {
     return ^DKNetworking *(NSString *url){
-        self.request.method = DKNetworkRequestMethodPUT;
+        self.request.method = DKRequestMethodPUT;
         self.request.urlStr = url;
         return self;
     };
@@ -165,7 +154,7 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 - (DKNetworking *(^)(NSString *))delete
 {
     return ^DKNetworking *(NSString *url){
-        self.request.method = DKNetworkRequestMethodDELETE;
+        self.request.method = DKRequestMethodDELETE;
         self.request.urlStr = url;
         return self;
     };
@@ -174,7 +163,7 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 - (DKNetworking *(^)(NSString *))patch
 {
     return ^DKNetworking *(NSString *url){
-        self.request.method = DKNetworkRequestMethodPATCH;
+        self.request.method = DKRequestMethodPATCH;
         self.request.urlStr = url;
         return self;
     };
@@ -191,7 +180,7 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 - (DKNetworking *(^)(NSDictionary *))header
 {
     return ^DKNetworking *(NSDictionary *header){
-        [self setNetworkHeader:header];
+        [DKNetworking setNetworkHeader:header];
         return self;
     };
 }
@@ -245,46 +234,38 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 
 + (NSURLSessionTask *)request:(DKNetworkRequest *)request callback:(DKNetworkBlock)callback
 {
-    NSAssert(request.urlStr.length, @"DKNetworking Error: URL can not be nil");
-    
-    // 请求头
-    request.header = [DKNetworking networkManager].networkHeader;
-    // 缓存方式
-    request.cacheType = [DKNetworking networkManager].networkCacheType;
-    // 请求格式
-    request.requestSerializer = [DKNetworking networkManager].networkRequestSerializer;
-    // 超时时间
-    request.requestTimeoutInterval = [DKNetworking networkManager].networkRequestTimeoutInterval;
-    
-    NSString *URL = request.urlStr;
-    NSDictionary *parameters = request.params;
-    switch (request.method) {
-        case DKNetworkRequestMethodGET:{
-            KCallRequest(GET)
-            break;
-        }
-        case DKNetworkRequestMethodPOST:{
-            KCallRequest(POST)
-            break;
-        }
-        case DKNetworkRequestMethodPUT:{
-            KCallRequest(PUT)
-            break;
-        }
-        case DKNetworkRequestMethodDELETE:{
-            KCallRequest(DELETE)
-            break;
-        }
-        case DKNetworkRequestMethodPATCH:{
-            KCallRequest(PATCH)
-            break;
-        }
-    }
+    return [[DKNetworking networkManager] request:request callback:callback];
 }
 
 - (NSURLSessionTask *)request:(DKNetworkRequest *)request callback:(DKNetworkBlock)callback
 {
-    return [DKNetworking request:request callback:callback];
+    NSAssert(request.urlStr.length, @"DKNetworking Error: URL can not be nil");
+    
+    request.header = [DKNetworking networkManager].networkHeader;
+    request.cacheType = [DKNetworking networkManager].networkCacheType;
+    request.requestSerializer = [DKNetworking networkManager].networkRequestSerializer;
+    request.requestTimeoutInterval = [DKNetworking networkManager].networkRequestTimeoutInterval;
+    
+    NSString *URL = request.urlStr;
+    NSDictionary *parameters = request.params;
+    NSString *method = self.methods[request.method];
+    
+    if (networkCacheType == DKNetworkCacheTypeCacheNetwork && callback)
+        callback(request, KResponse(DKCache(URL, parameters), nil));
+    
+    NSURLSessionTask *sessionTask = [sessionManager requestWithMethod:method URLString:URL parameters:parameters completion:^(NSURLSessionDataTask *task, DKNetworkResponse *response) {
+        [[DKNetworking allSessionTask] removeObject:task];
+        if (response.rawData)
+            [DKNetworkCache setCache:response.rawData URL:URL parameters:parameters];
+        if (isOpenLog)
+            DKLog(@"%@",response.error ? response.error : [response.rawData dk_jsonString]);
+        if (callback)
+            callback(request,response);
+    }];
+    
+    [[DKNetworking allSessionTask] addObject:sessionTask];
+    
+    return sessionTask;
 }
 
 #pragma clang diagnostic pop
@@ -296,7 +277,7 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 
 - (NSURLSessionTask *)GET:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback
 {
-    return KNetworkSessionTaskInstance(DKNetworkRequestMethodGET);
+    return KNetworkSessionTaskInstance(DKRequestMethodGET);
 }
 
 + (NSURLSessionTask *)POST:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback
@@ -306,7 +287,7 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 
 - (NSURLSessionTask *)POST:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback
 {
-    return KNetworkSessionTaskInstance(DKNetworkRequestMethodPOST);
+    return KNetworkSessionTaskInstance(DKRequestMethodPOST);
 }
 
 + (NSURLSessionTask *)PUT:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback
@@ -316,7 +297,7 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 
 - (NSURLSessionTask *)PUT:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback
 {
-    return KNetworkSessionTaskInstance(DKNetworkRequestMethodPUT);
+    return KNetworkSessionTaskInstance(DKRequestMethodPUT);
 }
 
 + (NSURLSessionTask *)DELETE:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback
@@ -326,7 +307,7 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 
 - (NSURLSessionTask *)DELETE:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback
 {
-    return KNetworkSessionTaskInstance(DKNetworkRequestMethodDELETE);
+    return KNetworkSessionTaskInstance(DKRequestMethodDELETE);
 }
 
 + (NSURLSessionTask *)PATCH:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback
@@ -336,7 +317,7 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 
 - (NSURLSessionTask *)PATCH:(NSString *)URL parameters:(NSDictionary *)parameters callback:(DKNetworkBlock)callback
 {
-    return KNetworkSessionTaskInstance(DKNetworkRequestMethodPATCH);
+    return KNetworkSessionTaskInstance(DKRequestMethodPATCH);
 }
 
 #pragma mark - Upload
@@ -466,7 +447,7 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
     }
 }
 
-#pragma mark - AFHTTPSessionManager
+#pragma mark - DKNetworkSessionManager
 
 #pragma mark Init
 
@@ -478,10 +459,24 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 
 + (void)initialize
 {
-    // 所有请求共享一个SessionManager
-    sessionManager = [AFHTTPSessionManager manager];
-    sessionManager.requestSerializer.timeoutInterval = kDefaultTimeoutInterval;
-    sessionManager.responseSerializer.acceptableContentTypes = [NSSet setWithObjects:@"application/json", @"text/html", @"text/json", @"text/plain", @"text/javascript", @"text/xml", @"image/*", nil];
+    // 所有请求共用一个SessionManager
+    sessionManager = [DKNetworkSessionManager manager];
+    
+    [self initSessionManager];
+}
+
++ (void)initSessionManager
+{
+    DKNetworking *networking = [DKNetworking networkManager];
+    
+    sessionManager.requestSerializer = networking.networkRequestSerializer == DKRequestSerializerHTTP ? [AFHTTPRequestSerializer serializer] : [AFJSONRequestSerializer serializer];
+    sessionManager.responseSerializer = networking.networkResponseSerializer == DKResponseSerializerHTTP ? [AFHTTPResponseSerializer serializer] : [AFJSONResponseSerializer serializer];
+    sessionManager.requestSerializer.timeoutInterval = networking.networkRequestTimeoutInterval ?: kDefaultTimeoutInterval;
+    
+    if (networking.networkHeader)
+        [networking.networkHeader enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id obj, BOOL * _Nonnull stop) {
+            [sessionManager.requestSerializer setValue:obj forHTTPHeaderField:key];
+        }];
 }
 
 #pragma mark Reset
@@ -540,7 +535,7 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
     }
 }
 
-- (void)setNetworkHeader:(NSDictionary *)networkHeader
++ (void)setNetworkHeader:(NSDictionary *)networkHeader
 {
     if (networkHeader) {
         [networkHeader enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id obj, BOOL * _Nonnull stop) {
@@ -562,12 +557,25 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
     return allSessionTask;
 }
 
+/**
+ 链式调用时候保存每一步的request配置信息
+
+ @return 链式调用的请求对象
+ */
 - (DKNetworkRequest *)request
 {
     if (!_request) {
         _request = [[DKNetworkRequest alloc] init];
     }
     return _request;
+}
+
+- (NSArray<NSString *> *)methods
+{
+    if (!_methods) {
+        _methods = @[@"GET", @"POST", @"PUT", @"DELETE", @"PATCH"];
+    }
+    return _methods;
 }
 
 @end
