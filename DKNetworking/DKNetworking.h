@@ -38,7 +38,7 @@ typedef void(^DKNetworkProgressBlock)(NSProgress *progress);
 @property (nonatomic, assign, readonly) DKNetworkCacheType networkCacheType;
 /** 请求序列化格式 */
 @property (nonatomic, assign, readonly) DKRequestSerializer networkRequestSerializer;
-/** 响应序列化格式 */
+/** 响应反序列化格式 */
 @property (nonatomic, assign, readonly) DKResponseSerializer networkResponseSerializer;
 /** 请求超时时间 */
 @property (nonatomic, assign, readonly) DKRequestTimeoutInterval networkRequestTimeoutInterval;

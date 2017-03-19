@@ -23,7 +23,7 @@
 /** 请求头 */
 @property (nonatomic, strong) NSDictionary *header;
 
-/** 缓存策略 */
+/** 缓存方式 */
 @property (nonatomic, assign) DKNetworkCacheType cacheType;
 
 /** 请求序列化格式 */

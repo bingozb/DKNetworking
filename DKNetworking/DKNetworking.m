@@ -10,11 +10,8 @@
 #import "AFNetworking.h"
 #import "DKNetworkSessionManager.h"
 
-#define KRequest(URL, Method, Params) [DKNetworkRequest requestWithUrlStr:URL method:Method params:Params]
-#define KResponse(RawData, Error) [DKNetworkResponse responseWithRawData:RawData error:Error]
-
 #define KNetworkSessionTask(Method) [networkManager Method:URL parameters:parameters callback:callback]
-#define KNetworkSessionTaskInstance(Method) [self request:KRequest(URL, Method, parameters) callback:callback]
+#define KNetworkSessionTaskInstance(Method) [self request:[DKNetworkRequest requestWithUrlStr:URL method:Method params:parameters] callback:callback]
 
 @interface DKNetworking ()
 @property (nonatomic, strong) DKNetworkRequest *request;
@@ -29,7 +26,6 @@ static DKNetworkCacheType networkCacheType;
 static DKNetworkSessionManager *sessionManager;
 static NSMutableArray<NSURLSessionTask *> *allSessionTask;
 
-static NSString *const kDefaultDownloadDir = @"Download";
 static CGFloat const kDefaultTimeoutInterval = 10.f;
 
 + (id)allocWithZone:(struct _NSZone *)zone
@@ -251,7 +247,7 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
     NSString *method = self.methods[request.method];
     
     if (networkCacheType == DKNetworkCacheTypeCacheNetwork && callback)
-        callback(request, KResponse(DKCache(URL, parameters), nil));
+        callback(request, [DKNetworkResponse responseWithRawData:DKCache(URL, parameters) error:nil]);
     
     NSURLSessionTask *sessionTask = [sessionManager requestWithMethod:method URLString:URL parameters:parameters completion:^(NSURLSessionDataTask *task, DKNetworkResponse *response) {
         [[DKNetworking allSessionTask] removeObject:task];
@@ -324,29 +320,23 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 
 + (NSURLSessionTask *)uploadFileWithURL:(NSString *)URL parameters:(NSDictionary *)parameters name:(NSString *)name filePath:(NSString *)filePath progressBlock:(DKNetworkProgressBlock)progressBlock callback:(void (^)(DKNetworkResponse *))callback
 {
-    NSURLSessionTask *sessionTask = [sessionManager POST:URL parameters:parameters constructingBodyWithBlock:^(id<AFMultipartFormData>  _Nonnull formData) {
+    NSURLSessionTask *sessionTask = [sessionManager uploadWithURLString:URL parameters:parameters constructingBodyWithBlock:^(id<DKMultipartFormData> formData) {
         NSError *error = nil;
         [formData appendPartWithFileURL:[NSURL URLWithString:filePath] name:name error:&error];
         if (error && callback) {
-            callback(KResponse(nil, error));
+            callback([DKNetworkResponse responseWithRawData:nil error:error]);
         }
-    } progress:^(NSProgress * _Nonnull uploadProgress) {
+    } progress:^(NSProgress *uploadProgress) {
         dispatch_sync(dispatch_get_main_queue(), ^{
             if (progressBlock)
                 progressBlock(uploadProgress);
         });
-    } success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
+    } completion:^(NSURLSessionDataTask *task, DKNetworkResponse *response) {
         [[self allSessionTask] removeObject:task];
         if (isOpenLog)
-            DKLog(@"%@",[responseObject dk_jsonString]);
+            DKLog(@"%@",response.error ? response.error : [response.rawData dk_jsonString]);
         if (callback)
-            callback([DKNetworkResponse responseWithRawData:responseObject error:nil]);
-    } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
-        [[self allSessionTask] removeObject:task];
-        if (isOpenLog)
-            DKLog(@"%@",error);
-        if (callback)
-            callback(KResponse(nil, error));
+            callback(response);
     }];
     
     [[self allSessionTask] addObject:sessionTask];
@@ -356,31 +346,28 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 
 + (NSURLSessionTask *)uploadImagesWithURL:(NSString *)URL parameters:(NSDictionary *)parameters name:(NSString *)name images:(NSArray<UIImage *> *)images fileNames:(NSArray<NSString *> *)fileNames imageScale:(CGFloat)imageScale imageType:(NSString *)imageType progressBlock:(DKNetworkProgressBlock)progressBlock callback:(void (^)(DKNetworkResponse *))callback
 {
-    NSURLSessionTask *sessionTask = [sessionManager POST:URL parameters:parameters constructingBodyWithBlock:^(id<AFMultipartFormData>  _Nonnull formData) {
+    NSURLSessionTask *sessionTask = [sessionManager uploadWithURLString:URL parameters:parameters constructingBodyWithBlock:^(id<DKMultipartFormData> formData) {
         for (NSUInteger i = 0; i < images.count; i++) {
+            // 压缩图片
             NSData *imageData = UIImageJPEGRepresentation(images[i], imageScale ?: 1.f);
-            NSString *timeStampImageName = [NSString stringWithFormat:@"%f%ld.%@",[[NSDate date] timeIntervalSince1970], (unsigned long)i, imageType ?: @"jpg"];
-            NSString *fileName = fileNames ? [NSString stringWithFormat:@"%@.%@", fileNames[i], imageType ?: @"jpg"] : timeStampImageName;
+            // 图片名
+            NSString *fileName = fileNames ? [NSString stringWithFormat:@"%@.%@", fileNames[i], imageType ?: @"jpg"] : [NSString stringWithFormat:@"%f%ld.%@",[[NSDate date] timeIntervalSince1970], (unsigned long)i, imageType ?: @"jpg"];
+            // MIME类型
             NSString *mimeType = [NSString stringWithFormat:@"image/%@",imageType ?: @"jpg"];
+            // 添加表单数据
             [formData appendPartWithFileData:imageData name:name fileName:fileName mimeType:mimeType];
         }
-    } progress:^(NSProgress * _Nonnull uploadProgress) {
+    } progress:^(NSProgress *uploadProgress) {
         dispatch_sync(dispatch_get_main_queue(), ^{
             if (progressBlock)
                 progressBlock(uploadProgress);
         });
-    } success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
+    } completion:^(NSURLSessionDataTask *task, DKNetworkResponse *response) {
         [[self allSessionTask] removeObject:task];
         if (isOpenLog)
-            DKLog(@"%@",[responseObject dk_jsonString]);
+            DKLog(@"%@",response.error ? response.error : [response.rawData dk_jsonString]);
         if (callback)
-            callback([DKNetworkResponse responseWithRawData:responseObject error:nil]);
-    } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
-        [[self allSessionTask] removeObject:task];
-        if (isOpenLog)
-            DKLog(@"%@",error);
-        if (callback)
-            callback(KResponse(nil, error));
+            callback(response);
     }];
     
     [[self allSessionTask] addObject:sessionTask];
@@ -392,30 +379,19 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 
 + (NSURLSessionTask *)downloadWithURL:(NSString *)URL fileDir:(NSString *)fileDir progressBlock:(DKNetworkProgressBlock)progressBlock callback:(void (^)(NSString *, NSError *))callback
 {
-    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:URL]];
-    NSURLSessionDownloadTask *downloadTask = [sessionManager downloadTaskWithRequest:request progress:^(NSProgress * _Nonnull downloadProgress) {
+    NSURLSessionDownloadTask *downloadTask = [sessionManager downloadWithURLString:URL fileDir:fileDir progress:^(NSProgress *downloadProgress) {
         dispatch_sync(dispatch_get_main_queue(), ^{
             if (progressBlock)
                 progressBlock(downloadProgress);
         });
-    } destination:^NSURL * _Nonnull(NSURL * _Nonnull targetPath, NSURLResponse * _Nonnull response) {
-        NSString *downloadDir = [[NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject] stringByAppendingPathComponent:fileDir ? fileDir : kDefaultDownloadDir];
-        NSFileManager *fileManager = [NSFileManager defaultManager];
-        [fileManager createDirectoryAtPath:downloadDir withIntermediateDirectories:YES attributes:nil error:nil];
-        NSString *filePath = [downloadDir stringByAppendingPathComponent:response.suggestedFilename];
-        
-        return [NSURL fileURLWithPath:filePath];
-    } completionHandler:^(NSURLResponse * _Nonnull response, NSURL * _Nullable filePath, NSError * _Nullable error) {
+    } completion:^(NSString *filePath, NSError *error) {
         [[self allSessionTask] removeObject:downloadTask];
-        if (error && callback) {
-            callback(nil, error);
-            return;
-        }
+        if (isOpenLog)
+            DKLog(@"%@",error ? error : filePath);
         if (callback)
-            callback(filePath.absoluteString, nil);
+            callback(filePath, error);
     }];
     
-    [downloadTask resume];
     [[self allSessionTask] addObject:downloadTask];
     
     return downloadTask;
