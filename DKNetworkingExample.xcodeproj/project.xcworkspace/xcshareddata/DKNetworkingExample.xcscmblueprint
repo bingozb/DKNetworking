@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "6AAA34BA4DE6F38FAFBBDD6522CCDA0F36EDB108",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "560C16BCE2270215990C64DC195A85EE7CBD70EE" : 9223372036854775807,
+    "6AAA34BA4DE6F38FAFBBDD6522CCDA0F36EDB108" : 9223372036854775807
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "49879DD4-849F-4F8D-9195-6B7885CD190F",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "560C16BCE2270215990C64DC195A85EE7CBD70EE" : "..\/iOS_Project\/Goods",
+    "6AAA34BA4DE6F38FAFBBDD6522CCDA0F36EDB108" : "DKNetworking\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "DKNetworkingExample",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "DKNetworkingExample.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "git.coding.net:dankal2188\/ios_goods.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "560C16BCE2270215990C64DC195A85EE7CBD70EE"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "github.com:bingozb\/DKNetworking.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "6AAA34BA4DE6F38FAFBBDD6522CCDA0F36EDB108"
+    }
+  ]
+}
