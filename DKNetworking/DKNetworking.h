@@ -14,6 +14,14 @@
 #import "DKNetworkLogManager.h"
 #import "NSDictionary+DKNetworking.h"
 
+#if __has_include(<ReactiveCocoa/ReactiveCocoa.h>)
+#import <ReactiveCocoa/ReactiveCocoa.h>
+#else
+#if __has_include("ReactiveCocoa.h")
+#import "ReactiveCocoa.h"
+#endif
+#endif
+
 typedef NSTimeInterval DKRequestTimeoutInterval;
 
 /** 网络状态的Block */
@@ -115,6 +123,11 @@ typedef void(^DKNetworkProgressBlock)(NSProgress *progress);
 - (DKNetworking *(^)(DKResponseSerializer responseSerializer))responseSerializer;
 - (DKNetworking *(^)(DKRequestTimeoutInterval requestTimeoutInterval))requestTimeoutInterval;
 - (void(^)(DKNetworkBlock networkBlock))callback;
+
+#ifdef RAC
+/** RAC链式发送请求 */
+- (RACSignal *(^)())executeSignal;
+#endif
 
 #pragma mark 常规调用
 

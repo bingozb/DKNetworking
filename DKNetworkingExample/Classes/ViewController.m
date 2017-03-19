@@ -65,14 +65,24 @@
 //    }];
     
     // 链式调用
-    DKNetworkBlock callback = ^(DKNetworkRequest *request, DKNetworkResponse *response) {
-        if (!response.error) {
-            self.networkTextView.text = [response.rawData dk_jsonString];
-        } else {
-            self.networkTextView.text = response.error.description;
-        }
-    };
-    [DKNetworking networkManager].post(url).callback(callback);
+//    DKNetworkBlock callback = ^(DKNetworkRequest *request, DKNetworkResponse *response) {
+//        if (!response.error) {
+//            self.networkTextView.text = [response.rawData dk_jsonString];
+//        } else {
+//            self.networkTextView.text = response.error.description;
+//        }
+//    };
+//    [DKNetworking networkManager].post(url).callback(callback);
+    
+    // RAC 链式调用
+    RACSignal *requestSignal = [DKNetworking networkManager].post(url).executeSignal();
+    
+    [requestSignal subscribeNext:^(RACTuple *x) {
+        DKNetworkResponse *response = x.second;
+        self.networkTextView.text = [response.rawData dk_jsonString];
+    } error:^(NSError *error) {
+        self.networkTextView.text = error.description;
+    }];
 }
 
 /**

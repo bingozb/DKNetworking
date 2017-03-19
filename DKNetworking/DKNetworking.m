@@ -223,6 +223,58 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
     };
 }
 
+#ifdef RAC
+- (RACSignal *(^)())executeSignal
+{
+    return ^RACSignal *(){
+        return [self rac_request:self.request];
+    };
+}
+
+- (RACSignal *)rac_request:(DKNetworkRequest *)request
+{
+    NSAssert(request.urlStr.length, @"DKNetworking Error: URL can not be nil");
+    
+    request.header = networkManager.networkHeader;
+    request.cacheType = networkManager.networkCacheType;
+    request.requestSerializer = networkManager.networkRequestSerializer;
+    request.requestTimeoutInterval = networkManager.networkRequestTimeoutInterval;
+    NSString *URL = request.urlStr;
+    NSDictionary *parameters = request.params;
+    NSString *method = self.methods[request.method];
+    
+    RACSignal *requestSignal = [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
+        NSURLSessionTask *sessionTask = [sessionManager requestWithMethod:method URLString:URL parameters:parameters completion:^(NSURLSessionDataTask *task, DKNetworkResponse *response) {
+            [[DKNetworking allSessionTask] removeObject:task];
+            if (response.rawData)
+                [DKNetworkCache setCache:response.rawData URL:URL parameters:parameters];
+            if (isOpenLog)
+                DKLog(@"%@",response.error ? response.error : [response.rawData dk_jsonString]);
+            if (!response.error) {
+                [subscriber sendNext:RACTuplePack(request,response)];
+                [subscriber sendCompleted];
+            } else {
+                [subscriber sendError:response.error];
+            }
+        }];
+        [[DKNetworking allSessionTask] addObject:sessionTask];
+        return nil;
+    }];
+    
+    if (networkCacheType == DKNetworkCacheTypeCacheNetwork) {
+        RACSignal *cacheSignal = [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
+            DKNetworkResponse *cacheResponse = [DKNetworkResponse responseWithRawData:DKCache(URL, parameters) error:nil];
+            [subscriber sendNext:RACTuplePack(request,cacheResponse)];
+            [subscriber sendCompleted];
+            return nil;
+        }];
+        return [cacheSignal merge:requestSignal];
+    }
+    
+    return requestSignal;
+}
+#endif
+
 #pragma mark 常规调用
 
 #pragma clang diagnostic push
