@@ -59,7 +59,7 @@ typedef void(^DKNetworkProgressBlock)(NSProgress *progress);
 + (instancetype)networkManager;
 
 /**
- 设置接口根路径, 设置后所有的网络访问都用相对路径
+ 设置接口根路径, 设置后所有的网络访问都使用相对路径
     baseURL的路径一定要有"/"结尾
  @param baseURL 根路径
  */
@@ -67,7 +67,8 @@ typedef void(^DKNetworkProgressBlock)(NSProgress *progress);
 
 /**
  设置缓存类型
-
+ DKNetworkCacheTypeNetworkOnly : 只加载网络数据
+ DKNetworkCacheTypeCacheNetwork : 先加载缓存,然后加载网络
  @param cacheType 缓存类型
  */
 + (void)setupCacheType:(DKNetworkCacheType)cacheType;
@@ -126,7 +127,7 @@ typedef void(^DKNetworkProgressBlock)(NSProgress *progress);
 
 #ifdef RAC
 /** RAC链式发送请求 */
-- (RACSignal *(^)())executeSignal;
+- (RACSignal *)executeSignal;
 #endif
 
 #pragma mark 常规调用

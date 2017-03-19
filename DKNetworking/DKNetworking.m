@@ -224,11 +224,9 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 }
 
 #ifdef RAC
-- (RACSignal *(^)())executeSignal
+- (RACSignal *)executeSignal
 {
-    return ^RACSignal *(){
-        return [self rac_request:self.request];
-    };
+    return [self rac_request:self.request];
 }
 
 - (RACSignal *)rac_request:(DKNetworkRequest *)request

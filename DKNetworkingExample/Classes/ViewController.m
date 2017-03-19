@@ -30,12 +30,14 @@
     
     // 开启日志打印
     [DKNetworking openLog];
+    // 关闭日志打印
+    [DKNetworking closeLog];
     
     [DKNetworking setupCacheType:DKNetworkCacheTypeCacheNetwork];
     
 //    [DKNetworking setupBaseURL:@"https://m.sfddj.com/app/v1/"];
     
-    // 清理缓存
+    // 清除缓存
 //    [DKNetworkCache clearCache];
     
     // 获取网络缓存大小
@@ -57,27 +59,16 @@
     
     // 常规调用
 //    [DKNetworking POST:url parameters:nil callback:^(DKNetworkRequest *request, DKNetworkResponse *response) {
-//        if (!response.error) {
-//            self.networkTextView.text = [response.rawData dk_jsonString];
-//        } else {
-//            self.networkTextView.text = response.error.description;
-//        }
+//        self.networkTextView.text = !response.error ? response.error.description : [response.rawData dk_jsonString];
 //    }];
     
     // 链式调用
-//    DKNetworkBlock callback = ^(DKNetworkRequest *request, DKNetworkResponse *response) {
-//        if (!response.error) {
-//            self.networkTextView.text = [response.rawData dk_jsonString];
-//        } else {
-//            self.networkTextView.text = response.error.description;
-//        }
-//    };
-//    [DKNetworking networkManager].post(url).callback(callback);
+//    [DKNetworking networkManager].post(url).callback(^(DKNetworkRequest *request, DKNetworkResponse *response) {
+//        self.networkTextView.text = !response.error ? response.error.description : [response.rawData dk_jsonString];
+//    });
     
     // RAC 链式调用
-    RACSignal *requestSignal = [DKNetworking networkManager].post(url).executeSignal();
-    
-    [requestSignal subscribeNext:^(RACTuple *x) {
+    [[DKNetworking networkManager].post(url).executeSignal subscribeNext:^(RACTuple *x) {
         DKNetworkResponse *response = x.second;
         self.networkTextView.text = [response.rawData dk_jsonString];
     } error:^(NSError *error) {
