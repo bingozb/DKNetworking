@@ -9,6 +9,9 @@
 #import "ViewController.h"
 #import "DKNetworking.h"
 
+#import "MJExtension.h"
+#import "MyHttpResponse.h"
+
 @interface ViewController ()
 
 @property (weak, nonatomic) IBOutlet UITextView *networkTextView;
@@ -30,11 +33,11 @@
     
     // 开启日志打印
     [DKNetworking openLog];
-    // 关闭日志打印
-    [DKNetworking closeLog];
     
+    // 设置缓存方式
     [DKNetworking setupCacheType:DKNetworkCacheTypeCacheNetwork];
     
+    // 设置请求根路径
 //    [DKNetworking setupBaseURL:@"https://m.sfddj.com/app/v1/"];
     
     // 清除缓存
@@ -49,6 +52,14 @@
     // 获取当前网络状态
 //    [self getCurrentNetworkStatus];
     
+    // 设置回调的信号的return值，根据不同项目进行配置
+    [DKNetworking setupResponseSignalWithFlattenMapBlock:^RACStream *(RACTuple *tuple) {
+        DKNetworkResponse *response = tuple.second; // 框架默认返回的response
+        MyHttpResponse *myResponse = [MyHttpResponse mj_objectWithKeyValues:response.rawData]; // 项目需要的response
+        myResponse.rawData = response.rawData;
+        myResponse.error = response.error;
+        return [RACSignal return:RACTuplePack(tuple.first, myResponse)];
+    }];
 }
 
 #pragma mark - POST
@@ -63,14 +74,15 @@
 //    }];
     
     // 链式调用
-//    [DKNetworking networkManager].post(url).callback(^(DKNetworkRequest *request, DKNetworkResponse *response) {
+//    DKNetworkManager.post(url).callback(^(DKNetworkRequest *request, DKNetworkResponse *response) {
 //        self.networkTextView.text = !response.error ? response.error.description : [response.rawData dk_jsonString];
 //    });
     
     // RAC 链式调用
-    [[DKNetworking networkManager].post(url).executeSignal subscribeNext:^(RACTuple *x) {
-        DKNetworkResponse *response = x.second;
-        self.networkTextView.text = [response.rawData dk_jsonString];
+    [DKNetworkManager.post(url).executeSignal subscribeNext:^(RACTuple *x) {
+//        DKNetworkResponse *response = x.second;
+        MyHttpResponse *myResponse = x.second;
+        self.networkTextView.text = [myResponse.rawData dk_jsonString];
     } error:^(NSError *error) {
         self.networkTextView.text = error.description;
     }];

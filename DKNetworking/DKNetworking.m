@@ -10,12 +10,13 @@
 #import "AFNetworking.h"
 #import "DKNetworkSessionManager.h"
 
-#define KNetworkSessionTask(Method) [networkManager Method:URL parameters:parameters callback:callback]
+#define KNetworkSessionTask(Method) [DKNetworkManager Method:URL parameters:parameters callback:callback]
 #define KNetworkSessionTaskInstance(Method) [self request:[DKNetworkRequest requestWithUrlStr:URL method:Method params:parameters] callback:callback]
 
 @interface DKNetworking ()
 @property (nonatomic, strong) DKNetworkRequest *request;
 @property (nonatomic, strong) NSArray<NSString *> *methods;
+@property (nonatomic, copy) DKNetworkFlattenMapBlock flattenMapBlock;
 @end
 
 @implementation DKNetworking
@@ -49,7 +50,7 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 {
     networkCacheType = cacheType;
     
-    [networkManager setupCacheType:cacheType];
+    [DKNetworkManager setupCacheType:cacheType];
 }
 
 + (void)setupBaseURL:(NSString *)baseURL
@@ -226,17 +227,21 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 #ifdef RAC
 - (RACSignal *)executeSignal
 {
-    return [self rac_request:self.request];
+    RACSignal *resultSignal = [self rac_request:self.request];
+    if (self.flattenMapBlock)
+        return [resultSignal flattenMap:self.flattenMapBlock];
+
+    return resultSignal;
 }
 
 - (RACSignal *)rac_request:(DKNetworkRequest *)request
 {
     NSAssert(request.urlStr.length, @"DKNetworking Error: URL can not be nil");
     
-    request.header = networkManager.networkHeader;
-    request.cacheType = networkManager.networkCacheType;
-    request.requestSerializer = networkManager.networkRequestSerializer;
-    request.requestTimeoutInterval = networkManager.networkRequestTimeoutInterval;
+    request.header = DKNetworkManager.networkHeader;
+    request.cacheType = DKNetworkManager.networkCacheType;
+    request.requestSerializer = DKNetworkManager.networkRequestSerializer;
+    request.requestTimeoutInterval = DKNetworkManager.networkRequestTimeoutInterval;
     NSString *URL = request.urlStr;
     NSDictionary *parameters = request.params;
     NSString *method = self.methods[request.method];
@@ -280,17 +285,17 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 
 + (NSURLSessionTask *)request:(DKNetworkRequest *)request callback:(DKNetworkBlock)callback
 {
-    return [networkManager request:request callback:callback];
+    return [DKNetworkManager request:request callback:callback];
 }
 
 - (NSURLSessionTask *)request:(DKNetworkRequest *)request callback:(DKNetworkBlock)callback
 {
     NSAssert(request.urlStr.length, @"DKNetworking Error: URL can not be nil");
     
-    request.header = networkManager.networkHeader;
-    request.cacheType = networkManager.networkCacheType;
-    request.requestSerializer = networkManager.networkRequestSerializer;
-    request.requestTimeoutInterval = networkManager.networkRequestTimeoutInterval;
+    request.header = DKNetworkManager.networkHeader;
+    request.cacheType = DKNetworkManager.networkCacheType;
+    request.requestSerializer = DKNetworkManager.networkRequestSerializer;
+    request.requestTimeoutInterval = DKNetworkManager.networkRequestTimeoutInterval;
     
     NSString *URL = request.urlStr;
     NSDictionary *parameters = request.params;
@@ -493,21 +498,29 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 
 + (void)initSessionManager
 {
-    sessionManager.requestSerializer = networkManager.networkRequestSerializer == DKRequestSerializerHTTP ? [AFHTTPRequestSerializer serializer] : [AFJSONRequestSerializer serializer];
-    sessionManager.responseSerializer = networkManager.networkResponseSerializer == DKResponseSerializerHTTP ? [AFHTTPResponseSerializer serializer] : [AFJSONResponseSerializer serializer];
-    sessionManager.requestSerializer.timeoutInterval = networkManager.networkRequestTimeoutInterval ?: kDefaultTimeoutInterval;
+    sessionManager.requestSerializer = DKNetworkManager.networkRequestSerializer == DKRequestSerializerHTTP ? [AFHTTPRequestSerializer serializer] : [AFJSONRequestSerializer serializer];
+    sessionManager.responseSerializer = DKNetworkManager.networkResponseSerializer == DKResponseSerializerHTTP ? [AFHTTPResponseSerializer serializer] : [AFJSONResponseSerializer serializer];
+    sessionManager.requestSerializer.timeoutInterval = DKNetworkManager.networkRequestTimeoutInterval ?: kDefaultTimeoutInterval;
     
-    if (networkManager.networkHeader)
-        [networkManager.networkHeader enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id obj, BOOL * _Nonnull stop) {
+    if (DKNetworkManager.networkHeader)
+        [DKNetworkManager.networkHeader enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id obj, BOOL * _Nonnull stop) {
             [sessionManager.requestSerializer setValue:obj forHTTPHeaderField:key];
         }];
 }
+
+#pragma mark - Result Config
+#ifdef RAC
++ (void)setupResponseSignalWithFlattenMapBlock:(DKNetworkFlattenMapBlock)flattenMapBlock
+{
+    DKNetworkManager.flattenMapBlock = flattenMapBlock;
+}
+#endif
 
 #pragma mark Reset
 
 + (void)setRequestSerializer:(DKRequestSerializer)requestSerializer
 {
-    [networkManager setRequestSerializer:requestSerializer];
+    [DKNetworkManager setRequestSerializer:requestSerializer];
 }
 
 - (void)setRequestSerializer:(DKRequestSerializer)requestSerializer
@@ -519,7 +532,7 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 
 + (void)setResponseSerializer:(DKResponseSerializer)responseSerializer
 {
-    [networkManager setResponseSerializer:responseSerializer];
+    [DKNetworkManager setResponseSerializer:responseSerializer];
 }
 
 - (void)setResponseSerializer:(DKResponseSerializer)responseSerializer
@@ -531,7 +544,7 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 
 + (void)setRequestTimeoutInterval:(NSTimeInterval)time
 {
-    [networkManager setRequestTimeoutInterval:time];
+    [DKNetworkManager setRequestTimeoutInterval:time];
 }
 
 - (void)setRequestTimeoutInterval:(NSTimeInterval)time
@@ -543,7 +556,7 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 
 + (void)setValue:(NSString *)value forHTTPHeaderField:(NSString *)field
 {
-    [networkManager setValue:value forHTTPHeaderField:field];
+    [DKNetworkManager setValue:value forHTTPHeaderField:field];
 }
 
 - (void)setValue:(NSString *)value forHTTPHeaderField:(NSString *)field

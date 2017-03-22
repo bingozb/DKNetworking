@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "MJExtension.h"
 #import "DKNetworkEnum.h"
 #import "DKNetworkCache.h"
 #import "DKNetworkRequest.h"
@@ -20,6 +21,12 @@
 #if __has_include("ReactiveCocoa.h")
 #import "ReactiveCocoa.h"
 #endif
+#endif
+
+#define DKNetworkManager [DKNetworking networkManager]
+
+#ifdef RAC
+typedef RACStream *(^DKNetworkFlattenMapBlock)(RACTuple *tuple);
 #endif
 
 typedef NSTimeInterval DKRequestTimeoutInterval;
@@ -265,6 +272,15 @@ typedef void(^DKNetworkProgressBlock)(NSProgress *progress);
  */
 + (void)cancelRequestWithURL:(NSString *)URL;
 
+#pragma mark - Config Result
+#ifdef RAC
+/**
+ 设置响应结果回调，可以设置信号返回的value为自己想要的值，比如用MJExtension框架，将DKNetworkResponse对象的rawData字典转为自己需要用的实体类再返回
+ 
+ @param flattenMapBlock 结果映射的设置回调block，其中RACTuple的first为DKNetworkRequest对象，second为DKNetworkResponse对象
+ */
++ (void)setupResponseSignalWithFlattenMapBlock:(DKNetworkFlattenMapBlock)flattenMapBlock;
+#endif
 #pragma mark - Reset SessionManager
 
 /**
