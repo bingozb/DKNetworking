@@ -19,7 +19,7 @@
 
 - 支持链式调用。
 
-- 支持配合 RAC 框架使用，但并非必须依赖。
+- 支持配合 RAC 框架使用链式调用，支持自定义信号的返回值。
 
 ## 安装
 
@@ -44,6 +44,8 @@ pod 'DKNetworking'
 ```objc
 DKNetworking *networking = [DKNetworking networkManager];
 ```
+
+从 1.1.0 版本开始提供了一个单例对象宏 `DKNetworkManager`。
 
 ### DKN 配置
 
@@ -244,7 +246,7 @@ baseURL 的路径一定要有“/”结尾，设置后所有的网络访问都�
 **调用：**
 
 ```objc
-[DKNetworking networkManager].post(url).params(@{@"name":@"bingo"}).callback(^(DKNetworkRequest *request, DKNetworkResponse *response) {
+DKNetworkManager.post(url).params(@{@"name":@"bingo"}).callback(^(DKNetworkRequest *request, DKNetworkResponse *response) {
     // ...
 });
 ```
@@ -265,8 +267,51 @@ baseURL 的路径一定要有“/”结尾，设置后所有的网络访问都�
 **调用：**
 
 ```objc
-[[DKNetworking networkManager].post(url).params(@{@"name":@"bingo"}).executeSignal subscribeNext:^(RACTuple *x) {
+[DKNetworkManager.post(url).params(@{@"name":@"bingo"}).executeSignal subscribeNext:^(RACTuple *x) {
     DKNetworkResponse *response = x.second;
+    // ...
+} error:^(NSError *error) {
+    // ...
+}];
+```
+
+#### RAC 链式调用 自定义信号的返回值
+
+**方法定义：**
+
+```objc
+#ifdef RAC
+/**
+ 设置响应结果回调，可以设置信号返回的value为自己想要的值，比如用MJExtension框架，将DKNetworkResponse对象的rawData字典转为自己项目的实体类再返回
+ 
+ @param flattenMapBlock 结果映射的设置回调block，其中RACTuple的first为DKNetworkRequest对象，second为DKNetworkResponse对象
+ */
++ (void)setupResponseSignalWithFlattenMapBlock:(DKNetworkFlattenMapBlock)flattenMapBlock;
+#endif
+```
+
+**使用：**
+
+考虑到代码执行顺序的问题，建议在项目中创建一个继承自 NSObject 的类 DKNetworkConfig，在 + load 方法中调用 DKN 的配置方法，设置回调的信号的 return 值，根据不同项目进行配置。
+
+```objc
+[DKNetworking setupResponseSignalWithFlattenMapBlock:^RACStream *(RACTuple *tuple) {
+    DKNetworkResponse *response = tuple.second; // 框架默认返回的response
+    MyHttpResponse *myResponse = [MyHttpResponse mj_objectWithKeyValues:response.rawData]; // 项目需要的response
+    myResponse.rawData = response.rawData;
+    myResponse.error = response.error;
+    return [RACSignal return:RACTuplePack(tuple.first, myResponse)];
+}];
+```
+
+**调用：**
+
+经过上面的`setupResponseSignalWithFlattenMapBlock:`方法设置后，信号返回的 RACTuple 的 second 为自定义的 response 对象。
+
+```objc
+[DKNetworkManager.post(url).executeSignal subscribeNext:^(RACTuple *x) {
+//        DKNetworkResponse *response = x.second;
+    MyHttpResponse *myResponse = x.second;
     // ...
 } error:^(NSError *error) {
     // ...
