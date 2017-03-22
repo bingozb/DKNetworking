@@ -9,7 +9,7 @@
 
 ## 特点
 
-- DKNetworkSessionManager 对 AFHTTPSessionManager 进行封装，以便以后可以轻易换掉依赖的 AFN。封装一层底层方法，包括网络请求、文件上传、文件下载这三个方法。其中网络请求调用了 AFN 的私有 API，把 GET、POST、PUT、DELETE、PARCH 这五个方法封成了一个 request 方法。
+- DKNetworkSessionManager 对 AFHTTPSessionManager 进行封装，以便以后可以轻易换掉依赖的 AFN。封装一层底层方法，包括网络请求、文件上传、文件下载这三个方法。其中网络请求调用了 AFN 的私有 API，把 GET、POST、PUT、DELETE、PATCH 这五个方法封成了一个 request 方法。
 
 - 拥有 AFN 大部分常用功能，包括网络状态监听等，提供类方法和实例方法调用。
 
