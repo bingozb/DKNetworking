@@ -16,7 +16,9 @@
 @interface DKNetworking ()
 @property (nonatomic, strong) DKNetworkRequest *request;
 @property (nonatomic, strong) NSArray<NSString *> *methods;
+#ifdef RAC
 @property (nonatomic, copy) DKNetworkFlattenMapBlock flattenMapBlock;
+#endif
 @end
 
 @implementation DKNetworking
