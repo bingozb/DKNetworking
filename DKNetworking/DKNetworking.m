@@ -9,6 +9,7 @@
 #import "DKNetworking.h"
 #import "AFNetworking.h"
 #import "DKNetworkSessionManager.h"
+#import "DKNetworkLogManager.h"
 
 #define KNetworkSessionTask(Method) [DKNetworkManager Method:URL parameters:parameters callback:callback]
 #define KNetworkSessionTaskInstance(Method) [self request:[DKNetworkRequest requestWithUrlStr:URL method:Method params:parameters] callback:callback]
@@ -253,8 +254,14 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
             [[DKNetworking allSessionTask] removeObject:task];
             if (response.rawData)
                 [DKNetworkCache setCache:response.rawData URL:URL parameters:parameters];
-            if (isOpenLog)
-                DKLog(@"%@",response.error ? response.error : [response.rawData dk_jsonString]);
+            if (isOpenLog) {
+                DKLog(@"DKN 请求: %@",[request.mj_keyValues dk_jsonString]);
+                if (!response.error) {
+                    DKLog(@"DKN 响应: %@",[response.rawData dk_jsonString]);
+                } else {
+                    [[DKNetworkLogManager defaultManager] showErrorLogWithResponse:response];
+                }
+            }
             if (!response.error) {
                 [subscriber sendNext:RACTuplePack(request,response)];
                 [subscriber sendCompleted];
@@ -310,10 +317,16 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
         [[DKNetworking allSessionTask] removeObject:task];
         if (response.rawData)
             [DKNetworkCache setCache:response.rawData URL:URL parameters:parameters];
-        if (isOpenLog)
-            DKLog(@"%@",response.error ? response.error : [response.rawData dk_jsonString]);
+        if (isOpenLog) {
+            DKLog(@"DKN 请求: %@",[request.mj_keyValues dk_jsonString]);
+            if (!response.error) {
+                DKLog(@"DKN 响应: %@",[response.rawData dk_jsonString]);
+            } else {
+                [[DKNetworkLogManager defaultManager] showErrorLogWithResponse:response];
+            }
+        }
         if (callback)
-            callback(request,response);
+            callback(request, response);
     }];
     
     [[DKNetworking allSessionTask] addObject:sessionTask];
@@ -442,7 +455,7 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
                 progressBlock(downloadProgress);
         });
     } completion:^(NSString *filePath, NSError *error) {
-        [[self allSessionTask] removeObject:downloadTask];
+//        [[self allSessionTask] removeObject:downloadTask];
         if (isOpenLog)
             DKLog(@"%@",error ? error : filePath);
         if (callback)
@@ -578,7 +591,7 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 {
     if (networkHeader) {
         [networkHeader enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id obj, BOOL * _Nonnull stop) {
-            [self setValue:key forHTTPHeaderField:obj];
+            [self setValue:obj forHTTPHeaderField:key];
         }];
     }
 }
