@@ -578,7 +578,7 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
 {
     if (networkHeader) {
         [networkHeader enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id obj, BOOL * _Nonnull stop) {
-            [self setValue:key forHTTPHeaderField:obj];
+            [self setValue:obj forHTTPHeaderField:key];
         }];
     }
 }
