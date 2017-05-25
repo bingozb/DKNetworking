@@ -15,6 +15,8 @@ printf("%s\n", [[NSString stringWithFormat:@"%@ %s 第%d行: %@", [[DKNetworkLog
 #define DKLog(...)
 #endif
 
+@class DKNetworkRequest, DKNetworkResponse;
+
 @interface DKNetworkLogManager : NSObject
 
 /**
@@ -33,5 +35,12 @@ printf("%s\n", [[NSString stringWithFormat:@"%@ %s 第%d行: %@", [[DKNetworkLog
  @param formatStr 日期格式，默认为@"yyyy-MM-dd hh:mm:ss.SSS"
  */
 - (void)setupDateFormat:(NSString *)formatStr;
+
+/**
+ 弹窗展示错误日志
+
+ @param response HTTP响应
+ */
+- (void)showErrorLogWithResponse:(DKNetworkResponse *)response;
 
 @end
