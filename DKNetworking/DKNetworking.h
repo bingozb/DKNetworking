@@ -49,17 +49,6 @@ typedef void(^DKNetworkProgressBlock)(NSProgress *progress);
  */
 @interface DKNetworking : NSObject
 
-/** 缓存方式 */
-@property (nonatomic, assign, readonly) DKNetworkCacheType networkCacheType;
-/** 请求序列化格式 */
-@property (nonatomic, assign, readonly) DKRequestSerializer networkRequestSerializer;
-/** 响应反序列化格式 */
-@property (nonatomic, assign, readonly) DKResponseSerializer networkResponseSerializer;
-/** 请求超时时间 */
-@property (nonatomic, assign, readonly) DKRequestTimeoutInterval networkRequestTimeoutInterval;
-/** 请求头 */
-@property (nonatomic, strong, readonly) NSDictionary *networkHeader;
-
 /**
  单例对象
  */
@@ -281,6 +270,7 @@ typedef void(^DKNetworkProgressBlock)(NSProgress *progress);
  */
 + (void)setupResponseSignalWithFlattenMapBlock:(DKNetworkFlattenMapBlock)flattenMapBlock;
 #endif
+
 #pragma mark - Reset SessionManager
 
 /**
@@ -305,15 +295,7 @@ typedef void(^DKNetworkProgressBlock)(NSProgress *progress);
 + (void)setRequestTimeoutInterval:(NSTimeInterval)time;
 
 /**
- 设置一对请求头参数
-
- @param value 请求头参数值
- @param field 请求头参数名
- */
-+ (void)setValue:(NSString *)value forHTTPHeaderField:(NSString *)field;
-
-/**
- 设置多对请求头参数
+ 设置请求头参数
 
  @param networkHeader 请求头参数字典
  */
