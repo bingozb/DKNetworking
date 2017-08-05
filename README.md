@@ -1,6 +1,8 @@
 # DKNetworking
 基于 AFNetworking + YYCache 的二次封装，支持缓存策略的网络请求框架
 
+[![Travis](https://travis-ci.org/bingozb/DKNetworking.svg?branch=dev)](https://travis-ci.org/bingozb/DKNetworking/builds/261226845)
+
 ![DKNetworking](https://github.com/bingozb/DKNetworking/blob/master/DKNetworkingDemo.gif)
 
 ## 前言
