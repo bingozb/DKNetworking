@@ -1,5 +1,21 @@
 language: objective-c
+os: osx
+osx_image: xcode8
+xcode_sdk: iphonesimulator9.0
+
 xcode_project: DKNetworkingExample.xcodeproj
 xcode_scheme: DKNetworkingExample
-script: xctool -project DKNetworkingExample.xcodeproj -scheme DKNetworkingExample CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
-os: osx
+
+script: 
+	xctool
+	-project DKNetworkingExample.xcodeproj 
+	-scheme DKNetworkingExample 
+	-sdk iphonesimulator 
+	build
+	ONLY_ACTIVE_ARCH=NO
+	CODE_SIGN_IDENTITY=""
+	CODE_SIGNING_REQUIRED=NO
+
+before_install:
+  - brew update
+  - brew uninstall xctool && brew install --HEAD xctool
