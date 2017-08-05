@@ -1,4 +1,5 @@
 language: objective-c
 xcode_project: DKNetworkingExample.xcodeproj
 xcode_scheme: DKNetworkingExample
+script: xctool -project DKNetworkingExample.xcodeproj -scheme DKNetworkingExample CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
 os: osx
