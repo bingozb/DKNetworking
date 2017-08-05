@@ -4,6 +4,7 @@
 [![Travis](https://travis-ci.org/bingozb/DKNetworking.svg?branch=dev)](https://travis-ci.org/bingozb/DKNetworking/builds/261226845)
 [![CocoaPods](https://img.shields.io/cocoapods/v/DKNetworking.svg)](https://cocoapods.org/pods/DKNetworking)
 [![CocoaPods](https://img.shields.io/cocoapods/dt/DKNetworking.svg)](https://cocoapods.org/pods/DKNetworking)
+[![license](https://img.shields.io/github/license/bingozb/DKNetworking.svg)](https://github.com/bingozb/DKNetworking/blob/master/LICENSE)
 
 ![DKNetworking](https://github.com/bingozb/DKNetworking/blob/master/DKNetworkingDemo.gif)
 
