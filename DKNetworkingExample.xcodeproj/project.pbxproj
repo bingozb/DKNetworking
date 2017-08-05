@@ -1049,13 +1049,11 @@
 				TargetAttributes = {
 					D7ACFC541E616D70000BE551 = {
 						CreatedOnToolsVersion = 8.2.1;
-						DevelopmentTeam = G8M2K7562P;
-						ProvisioningStyle = Automatic;
+						ProvisioningStyle = Manual;
 					};
 					D7ACFC6D1E616D71000BE551 = {
 						CreatedOnToolsVersion = 8.2.1;
-						DevelopmentTeam = G8M2K7562P;
-						ProvisioningStyle = Automatic;
+						ProvisioningStyle = Manual;
 						TestTargetID = D7ACFC541E616D70000BE551;
 					};
 				};
@@ -1385,12 +1383,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
-				DEVELOPMENT_TEAM = G8M2K7562P;
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = DKNetworkingExample/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = cn.dankal.DKNetworkingExample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Debug;
 		};
@@ -1399,12 +1398,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
-				DEVELOPMENT_TEAM = G8M2K7562P;
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = DKNetworkingExample/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = cn.dankal.DKNetworkingExample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Release;
 		};
@@ -1412,11 +1412,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				DEVELOPMENT_TEAM = G8M2K7562P;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = DKNetworkingExampleTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = cn.dankal.DKNetworkingExampleTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DKNetworkingExample.app/DKNetworkingExample";
 			};
 			name = Debug;
@@ -1425,11 +1427,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				DEVELOPMENT_TEAM = G8M2K7562P;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = DKNetworkingExampleTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = cn.dankal.DKNetworkingExampleTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DKNetworkingExample.app/DKNetworkingExample";
 			};
 			name = Release;
