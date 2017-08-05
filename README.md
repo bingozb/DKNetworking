@@ -2,6 +2,8 @@
 基于 AFNetworking + YYCache 的二次封装，支持缓存策略的网络请求框架
 
 [![Travis](https://travis-ci.org/bingozb/DKNetworking.svg?branch=dev)](https://travis-ci.org/bingozb/DKNetworking/builds/261226845)
+[![CocoaPods](https://img.shields.io/cocoapods/v/DKNetworking.svg)](https://cocoapods.org/pods/DKNetworking)
+[![CocoaPods](https://img.shields.io/cocoapods/dt/DKNetworking.svg)](https://cocoapods.org/pods/DKNetworking)
 
 ![DKNetworking](https://github.com/bingozb/DKNetworking/blob/master/DKNetworkingDemo.gif)
 
