@@ -1,4 +1,4 @@
 language: objective-c
-xcode_project: DKNetworkingExample.xcodeproj # path to your xcodeproj folder
-xcode_scheme: DKNetworkingExampleTests
+xcode_project: DKNetworkingExample.xcodeproj
+xcode_scheme: DKNetworkingExample
 os: osx
