@@ -5,6 +5,7 @@
 [![CocoaPods](https://img.shields.io/cocoapods/v/DKNetworking.svg)](https://cocoapods.org/pods/DKNetworking)
 [![CocoaPods](https://img.shields.io/cocoapods/dt/DKNetworking.svg)](https://cocoapods.org/pods/DKNetworking)
 [![license](https://img.shields.io/github/license/bingozb/DKNetworking.svg)](https://github.com/bingozb/DKNetworking/blob/master/LICENSE)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bhttps%3A%2F%2Fgithub.com%2Fbingozb%2FDKNetworking.svg?type=shield)](https://app.fossa.io/projects/git%2Bhttps%3A%2F%2Fgithub.com%2Fbingozb%2FDKNetworking?ref=badge_shield)
 
 ![DKNetworking](https://github.com/bingozb/DKNetworking/blob/master/DKNetworkingDemo.gif)
 
@@ -418,3 +419,7 @@ DKNetworkManager.post(url).params(@{@"name":@"bingo"}).callback(^(DKNetworkReque
 
 - 与服务端的通讯加密，考虑添加 RSA 非对称加密等方法。
 
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bhttps%3A%2F%2Fgithub.com%2Fbingozb%2FDKNetworking.svg?type=large)](https://app.fossa.io/projects/git%2Bhttps%3A%2F%2Fgithub.com%2Fbingozb%2FDKNetworking?ref=badge_large)
