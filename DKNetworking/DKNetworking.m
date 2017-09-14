@@ -530,6 +530,13 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
     _networkResponseSerializer = responseSerializer;
 }
 
++ (void)setupSessionManager:(DKNetworkSessionManagerBlock)sessionManagerBlock
+{
+    if (sessionManagerBlock) {
+        sessionManagerBlock(_sessionManager);
+    }
+}
+
 + (void)setRequestTimeoutInterval:(NSTimeInterval)time
 {
     _sessionManager.requestSerializer.timeoutInterval = time;

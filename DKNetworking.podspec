@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
     s.name         = "DKNetworking"
-    s.version      = "1.3.0"
+    s.version      = "1.4.0"
     s.ios.deployment_target = '8.0'
     s.summary      = "基于 AFNetworking + YYCache + MJExtension 封装的可持久化网络层框架"
     s.homepage     = "https://github.com/bingozb/DKNetworking"

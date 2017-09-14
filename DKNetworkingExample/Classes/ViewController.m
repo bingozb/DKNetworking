@@ -60,6 +60,11 @@
         myResponse.error = response.error;
         return [RACSignal return:RACTuplePack(tuple.first, myResponse)];
     }];
+    
+    // 把DELETE方法的参数放到body(移除了默认的DELETE)
+    [DKNetworking setupSessionManager:^(DKNetworkSessionManager *sessionManager) {
+        sessionManager.requestSerializer.HTTPMethodsEncodingParametersInURI = [NSSet setWithObjects:@"GET", @"HEAD", nil];
+    }];
 }
 
 #pragma mark - POST
