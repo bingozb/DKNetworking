@@ -13,6 +13,7 @@
 #import "DKNetworkRequest.h"
 #import "DKNetworkResponse.h"
 #import "DKNetworkLogManager.h"
+#import "DKNetworkSessionManager.h"
 #import "NSDictionary+DKNetworking.h"
 
 #if __has_include(<ReactiveCocoa/ReactiveCocoa.h>)
@@ -43,6 +44,11 @@ typedef void(^DKNetworkBlock)(DKNetworkRequest *request, DKNetworkResponse *resp
     Progress.totalUnitCount     : 总大小
  */
 typedef void(^DKNetworkProgressBlock)(NSProgress *progress);
+
+/**
+ sessionManager
+ */
+typedef void(^DKNetworkSessionManagerBlock)(DKNetworkSessionManager *sessionManager);
 
 /**
  基于 AFN + YYCache 的网络层封装类
@@ -286,6 +292,13 @@ typedef void(^DKNetworkProgressBlock)(NSProgress *progress);
  @param responseSerializer DKResponseSerializerJSON:JSON格式, DKResponseSerializerHTTP:二进制格式
  */
 + (void)setResponseSerializer:(DKResponseSerializer)responseSerializer;
+
+/**
+ 设置sessionManager
+
+ @param sessionManagerBlock sessionManager
+ */
++ (void)setupSessionManager:(DKNetworkSessionManagerBlock)sessionManagerBlock;
 
 /**
  设置请求超时时间 : 默认10秒
