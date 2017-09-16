@@ -1,7 +1,7 @@
 # DKNetworking
 基于 AFNetworking + YYCache 的二次封装，支持缓存策略的网络请求框架
 
-[![Travis](https://travis-ci.org/bingozb/DKNetworking.svg?branch=dev)](https://travis-ci.org/bingozb/DKNetworking/builds/261226845)
+[![Travis](https://api.travis-ci.org/bingozb/DKNetworking.svg)](https://travis-ci.org/bingozb/DKNetworking)
 [![CocoaPods](https://img.shields.io/cocoapods/v/DKNetworking.svg)](https://cocoapods.org/pods/DKNetworking)
 [![CocoaPods](https://img.shields.io/cocoapods/dt/DKNetworking.svg)](https://cocoapods.org/pods/DKNetworking)
 [![license](https://img.shields.io/github/license/bingozb/DKNetworking.svg)](https://github.com/bingozb/DKNetworking/blob/master/LICENSE)
@@ -145,26 +145,23 @@ baseURL 的路径一定要有“/”结尾，设置后所有的网络访问都�
 ```
 
 #### 设置 Header
-##### 设置一对请求头参数
 
 ```objc
 /**
- 设置一对请求头参数
-
- @param value 请求头参数值
- @param field 请求头参数名
- */
-+ (void)setValue:(NSString *)value forHTTPHeaderField:(NSString *)field;
-```
-##### 设置多对请求头参数
-
-```objc
-/**
- 设置多对请求头参数
+ 设置请求头参数
 
  @param networkHeader 请求头参数字典
  */
 + (void)setNetworkHeader:(NSDictionary *)networkHeader;
+```
+
+#### 设置 SessionManager
+
+```objc
+// 设置sessionManager，例如设置HTTPMethodsEncodingParametersInURI，让DELETE方法的请求参数放在Body中，而非URI中
+[DKNetworking setupSessionManager:^(DKNetworkSessionManager *sessionManager) {
+    sessionManager.requestSerializer.HTTPMethodsEncodingParametersInURI = [NSSet setWithObjects:@"GET", @"HEAD", nil];
+}];
 ```
 
 ### 网络状态
@@ -319,7 +316,7 @@ DKNetworkManager.post(url).params(@{@"name":@"bingo"}).callback(^(DKNetworkReque
 
 ```objc
 [DKNetworkManager.post(url).executeSignal subscribeNext:^(RACTuple *x) {
-//        DKNetworkResponse *response = x.second;
+    //DKNetworkResponse *response = x.second;
     MyHttpResponse *myResponse = x.second;
     // ...
 } error:^(NSError *error) {
