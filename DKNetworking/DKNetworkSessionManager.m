@@ -26,6 +26,8 @@ static NSString *const kDefaultDownloadDir = @"DKNetworkDownload";
             completion(task, response);
         }
     } failure:^(NSURLSessionDataTask *task, NSError *error) {
+        // network error.
+        [error setValue:@(-999) forKey:@"code"];
         response = [DKNetworkResponse responseWithRawData:nil error:error];
         if (completion) {
             completion(task, response);
