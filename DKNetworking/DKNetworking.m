@@ -247,12 +247,8 @@ static CGFloat const kDefaultTimeoutInterval = 10.f;
                     [[DKNetworkLogManager defaultManager] showErrorLogWithResponse:response];
                 }
             }
-            if (!response.error) {
-                [subscriber sendNext:RACTuplePack(request,response)];
-                [subscriber sendCompleted];
-            } else {
-                [subscriber sendError:response.error];
-            }
+            [subscriber sendNext:RACTuplePack(request,response)];
+            [subscriber sendCompleted];
         }];
         [DKNetworking.allSessionTask addObject:sessionTask];
         return nil;
