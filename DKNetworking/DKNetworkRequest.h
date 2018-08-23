@@ -15,7 +15,7 @@
 @property (nonatomic, copy) NSString *urlStr;
 
 /** 请求方法 */
-@property (nonatomic, assign) DKRequestMethod method;
+@property (nonatomic, copy) NSString *method;
 
 /** 请求参数 */
 @property (nonatomic, strong) NSDictionary *params;
@@ -29,6 +29,9 @@
 /** 请求序列化格式 */
 @property (nonatomic, assign) DKRequestSerializer requestSerializer;
 
+/** 响应序列化格式 */
+@property (nonatomic, assign) DKResponseSerializer responseSerializer;
+
 /** 请求超时时间 */
 @property (nonatomic, assign) NSTimeInterval requestTimeoutInterval;
 
@@ -41,6 +44,6 @@
  @param params 请求参数
  @return 网络请求对象
  */
-+ (instancetype)requestWithUrlStr:(NSString *)urlStr method:(DKRequestMethod)method params:(NSDictionary *)params;
++ (instancetype)requestWithUrlStr:(NSString *)urlStr method:(NSString *)method params:(NSDictionary *)params;
 
 @end

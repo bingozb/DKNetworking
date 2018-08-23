@@ -12,11 +12,12 @@
 @implementation DKNetworkResponse
 MJCodingImplementation
 
-+ (instancetype)responseWithRawData:(id)rawData error:(NSError *)error
++ (instancetype)responseWithRawData:(id)rawData httpStatusCode:(NSUInteger)httpStatusCode error:(NSError *)error
 {
     DKNetworkResponse *response = [[self alloc] init];
     response.rawData = rawData;
     response.error = error;
+    response.httpStatusCode = httpStatusCode;
     
     return response;
 }

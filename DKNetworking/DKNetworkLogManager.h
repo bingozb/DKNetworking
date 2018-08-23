@@ -19,14 +19,15 @@ printf("%s\n", [[NSString stringWithFormat:@"%@ %s 第%d行: %@", [[DKNetworkLog
 
 @interface DKNetworkLogManager : NSObject
 
-/**
- 单例对象
- */
+/** 单例对象 */
 + (instancetype)defaultManager;
 
-/**
- 返回日志打印的日期时间
- */
+/** 开启打印 */
+- (void)openLog;
+/** 关闭打印 */
+- (void)closeLog;
+
+/** 返回日志打印的日期时间 */
 - (NSString *)logDateTime;
 
 /**
@@ -36,11 +37,10 @@ printf("%s\n", [[NSString stringWithFormat:@"%@ %s 第%d行: %@", [[DKNetworkLog
  */
 - (void)setupDateFormat:(NSString *)formatStr;
 
-/**
- 弹窗展示错误日志
+/** 打印请求 */
+- (void)logRequest:(DKNetworkRequest *)request;
 
- @param response HTTP响应
- */
-- (void)showErrorLogWithResponse:(DKNetworkResponse *)response;
+/** 打印响应 */
+- (void)logResponse:(DKNetworkResponse *)response;
 
 @end

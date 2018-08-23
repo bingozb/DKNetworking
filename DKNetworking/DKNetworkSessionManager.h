@@ -66,34 +66,4 @@ typedef void(^DKNetworkTaskBlock)(NSURLSessionDataTask *task, DKNetworkResponse 
                                  parameters:(id)parameters
                                  completion:(DKNetworkTaskBlock)completion;
 
-/**
- DKN文件上传底层方法
-
- @param URLString 请求地址
- @param parameters 请求参数
- @param block 表单数据回调
- @param uploadProgress 上传进度回调
- @param completion 请求回调
- @return 请求任务对象
- */
-- (NSURLSessionDataTask *)uploadWithURLString:(NSString *)URLString
-                                   parameters:(id)parameters
-                    constructingBodyWithBlock:(void (^)(id <DKMultipartFormData> formData))block
-                                     progress:(void (^)(NSProgress *uploadProgress))uploadProgress
-                                   completion:(DKNetworkTaskBlock)completion;
-
-/**
- DKN文件下载底层方法
-
- @param URLString 请求地址
- @param fileDir 本机文件保存地址
- @param downloadProgressBlock 下载进度回调
- @param completion 请求回调
- @return 下载任务对象
- */
-- (NSURLSessionDownloadTask *)downloadWithURLString:(NSString *)URLString
-                                            fileDir:(NSString *)fileDir
-                                           progress:(void (^)(NSProgress *downloadProgress))downloadProgressBlock
-                                         completion:(void (^)(NSString *filePath, NSError *error))completion;
-
 @end
