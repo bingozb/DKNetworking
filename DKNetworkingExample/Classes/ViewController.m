@@ -53,15 +53,16 @@
     [DKNetworking setupSessionManager:^(DKNetworkSessionManager *sessionManager) {
         sessionManager.requestSerializer.HTTPMethodsEncodingParametersInURI = [NSSet setWithObjects:@"GET", @"HEAD", nil];
     }];
+    
+    DKNetworkManager.setupGlobalRequestSerializer(DKRequestSerializerHTTP);
 }
 
 #pragma mark - POST
 
 - (void)postWithCache:(BOOL)isOn url:(NSString *)url
 {
-    [DKNetworkManager.post(url).cacheType(isOn ? DKNetworkCacheTypeCacheNetwork : DKNetworkCacheTypeNetworkOnly). executeSignal subscribeNext:^(RACTuple *x) {
+    [DKNetworkManager.get(url).cacheType(isOn ? DKNetworkCacheTypeCacheNetwork : DKNetworkCacheTypeNetworkOnly).executeSignal subscribeNext:^(RACTuple *x) {
         DKNetworkResponse *response = x.second;
-//        MyHttpResponse *myResponse = x.second;
         self.networkTextView.text = [response.rawData dk_jsonString];
     } error:^(NSError *error) {
         self.networkTextView.text = error.description;

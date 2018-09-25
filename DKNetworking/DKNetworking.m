@@ -141,6 +141,11 @@ static DKNetworkGlobalConfig *_globalConfig;
 {
     return ^DKNetworking *(NSDictionary *header){
         self.request.header = header;
+        if (header) {
+            [header enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id obj, BOOL * _Nonnull stop) {
+                [_sessionManager.requestSerializer setValue:obj forHTTPHeaderField:key];
+            }];
+        }
         return self;
     };
 }
@@ -311,6 +316,8 @@ static DKNetworkGlobalConfig *_globalConfig;
         _request.requestSerializer = _globalConfig.requestSerializer;
         _request.responseSerializer = _globalConfig.responseSerializer;
         _request.requestTimeoutInterval = _globalConfig.requestTimeoutInterval;
+        
+        [DKNetworking initSessionManager];
     }
     return _request;
 }

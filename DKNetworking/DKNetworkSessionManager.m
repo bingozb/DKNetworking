@@ -19,14 +19,15 @@
     __block DKNetworkResponse *response;
     
     NSURLSessionDataTask *dataTask = [self dataTaskWithHTTPMethod:method URLString:URLString parameters:parameters uploadProgress:nil downloadProgress:nil success:^(NSURLSessionDataTask *task, id responseObject) {
-        response = [DKNetworkResponse responseWithRawData:responseObject httpStatusCode:200 error:nil];
+        response = [DKNetworkResponse responseWithRawData:responseObject httpStatusCode:((NSHTTPURLResponse *)task.response).statusCode error:nil];
         if (completion) {
             completion(task, response);
         }
     } failure:^(NSURLSessionDataTask *task, NSError *error) {
-        NSInteger httpStatusCode = ((NSHTTPURLResponse *)error.userInfo[AFNetworkingOperationFailingURLResponseErrorKey]).statusCode;
-        NSDictionary *errorData = [NSJSONSerialization JSONObjectWithData:error.userInfo[AFNetworkingOperationFailingURLResponseDataErrorKey] options:NSJSONReadingAllowFragments error:nil];
-        response = [DKNetworkResponse responseWithRawData:errorData httpStatusCode:httpStatusCode error:error];
+        NSInteger httpStatusCode = ((NSHTTPURLResponse *)task.response).statusCode;
+        NSData *errorData = error.userInfo[AFNetworkingOperationFailingURLResponseDataErrorKey];
+        NSDictionary *rawData = errorData ? [NSJSONSerialization JSONObjectWithData:errorData options:NSJSONReadingAllowFragments error:nil] : nil;
+        response = [DKNetworkResponse responseWithRawData:rawData httpStatusCode:httpStatusCode error:error];
         if (completion) {
             completion(task, response);
         }
