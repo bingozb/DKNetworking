@@ -8,7 +8,6 @@
 
 #import "ViewController.h"
 #import "DKNetworking.h"
-
 #import "MJExtension.h"
 #import "MyHttpResponse.h"
 
@@ -28,9 +27,6 @@
     // 开启日志打印
     [DKNetworking openLog];
     
-    // 设置请求根路径
-//    [DKNetworking setupBaseURL:@"https://m.sfddj.com/app/v1/"];
-    
     // 清除缓存
 //    [DKNetworkCache clearCache];
     
@@ -46,12 +42,13 @@
     // 设置回调的信号的return值，根据不同项目进行配置
     [DKNetworking setupResponseSignalWithFlattenMapBlock:^RACStream *(RACTuple *tuple) {
         DKNetworkResponse *response = tuple.second; // 框架默认返回的response
-        return [RACSignal return:RACTuplePack(tuple.first, response)];
-    }];
-    
-    // 把DELETE方法的参数放到body(移除了默认的DELETE)
-    [DKNetworking setupSessionManager:^(DKNetworkSessionManager *sessionManager) {
-        sessionManager.requestSerializer.HTTPMethodsEncodingParametersInURI = [NSSet setWithObjects:@"GET", @"HEAD", nil];
+        // MyHttpResponse
+        MyHttpResponse *myResponse = [[MyHttpResponse alloc] init];
+        myResponse.result = response.rawData;
+        myResponse.message = @"some message in data";
+        myResponse.errorCode = @"200";
+        
+        return [RACSignal return:RACTuplePack(tuple.first, myResponse)];
     }];
     
     DKNetworkManager.setupGlobalRequestSerializer(DKRequestSerializerHTTP);
@@ -62,8 +59,10 @@
 - (void)postWithCache:(BOOL)isOn url:(NSString *)url
 {
     [DKNetworkManager.get(url).cacheType(isOn ? DKNetworkCacheTypeCacheNetwork : DKNetworkCacheTypeNetworkOnly).executeSignal subscribeNext:^(RACTuple *x) {
-        DKNetworkResponse *response = x.second;
-        self.networkTextView.text = [response.rawData dk_jsonString];
+//        DKNetworkResponse *response = x.second;
+//        self.networkTextView.text = [self jsonTextWithData:response.rawData];
+        MyHttpResponse *myResponse = x.second;
+        self.networkTextView.text = [self jsonTextWithData:myResponse.result];
     } error:^(NSError *error) {
         self.networkTextView.text = error.description;
     }];
@@ -74,7 +73,7 @@
  */
 - (void)monitorNetworkStatus
 {
-    [DKNetworking networkStatusWithBlock:^(DKNetworkStatus status) {
+    [DKNetworking setupNetworkStatusWithBlock:^(DKNetworkStatus status) {
         
         switch (status) {
             case DKNetworkStatusUnknown:
@@ -116,6 +115,13 @@
 - (IBAction)isCache:(UISwitch *)sender
 {
     self.cacheStatusLabel.text = sender.isOn ? @"Cache Open" : @"Cache Close";
+}
+
+#pragma mark - private
+
+- (NSString *)jsonTextWithData:(NSData *)data
+{
+    return [[NSString alloc] initWithData:[NSJSONSerialization dataWithJSONObject:data options:NSJSONWritingPrettyPrinted error:nil] encoding:NSUTF8StringEncoding];
 }
 
 @end

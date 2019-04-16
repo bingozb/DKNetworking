@@ -14,6 +14,9 @@ typedef RACStream *(^DKNetworkFlattenMapBlock)(RACTuple *tuple);
 
 @interface DKNetworkGlobalConfig : NSObject
 
+/** baseURL */
+@property (nonatomic, copy) NSString *baseURL;
+
 /** 请求头 */
 @property (nonatomic, strong, readonly) NSDictionary *headers;
 

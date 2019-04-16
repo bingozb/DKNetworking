@@ -68,7 +68,7 @@ static YYCache *_cacheManager;
     NSString *paramString = [[NSString alloc] initWithData:stringData encoding:NSUTF8StringEncoding];
     NSString *cacheKey = [NSString stringWithFormat:@"%@%@",URL,paramString];
     
-    return [self dk_md5:cacheKey];
+    return [self md5:cacheKey];
 }
 
 /**
@@ -77,7 +77,7 @@ static YYCache *_cacheManager;
  @param input 待加密字符串
  @return MD5加密后的字符串
  */
-+ (NSString *)dk_md5:(NSString *)input
++ (NSString *)md5:(NSString *)input
 {
     const char *cStr = [[input dataUsingEncoding:NSUTF8StringEncoding] bytes];
     unsigned char digest[16];

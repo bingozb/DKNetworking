@@ -13,46 +13,40 @@
 #import "DKNetworkGlobalConfig.h"
 
 @interface DKNetworking ()
+@property (nonatomic, strong) DKNetworkSessionManager *sessionManager;
 @property (nonatomic, strong) DKNetworkRequest *request;
 @end
 
 @implementation DKNetworking
 
-static DKNetworkSessionManager *_sessionManager;
-static DKNetworkGlobalConfig *_globalConfig;
+static DKNetworkStatusBlock _networkStatusBlock;
 
 + (instancetype)networkManager
 {
     return [[self alloc] init];
 }
 
-+ (void)setupBaseURL:(NSString *)baseURL
+- (instancetype)init
 {
-    _sessionManager = [[DKNetworkSessionManager alloc] initWithBaseURL:[NSURL URLWithString:baseURL]];
-    
-    [self initSessionManager];
+    if (self = [super init]) {
+        self.sessionManager = [[DKNetworkSessionManager alloc] initWithBaseURL:[NSURL URLWithString:[DKNetworkGlobalConfig defaultConfig].baseURL]];
+        self.request = [[DKNetworkRequest alloc] init];
+    }
+    return self;
+}
+
+#pragma mark - Config
+
++ (void)setupResponseSignalWithFlattenMapBlock:(DKNetworkFlattenMapBlock)flattenMapBlock
+{
+    [DKNetworkGlobalConfig defaultConfig].flattenMapBlock = flattenMapBlock;
 }
 
 #pragma mark - Network Status
 
-+ (void)networkStatusWithBlock:(void (^)(DKNetworkStatus))networkStatusBlock
++ (void)setupNetworkStatusWithBlock:(DKNetworkStatusBlock)networkStatusBlock
 {
-    [[AFNetworkReachabilityManager sharedManager] setReachabilityStatusChangeBlock:^(AFNetworkReachabilityStatus status) {
-        switch (status) {
-            case AFNetworkReachabilityStatusUnknown:
-                if (networkStatusBlock) networkStatusBlock(DKNetworkStatusUnknown);
-                break;
-            case AFNetworkReachabilityStatusNotReachable:
-                if (networkStatusBlock) networkStatusBlock(DKNetworkStatusNotReachable);
-                break;
-            case AFNetworkReachabilityStatusReachableViaWWAN:
-                if (networkStatusBlock) networkStatusBlock(DKNetworkStatusReachableViaWWAN);
-                break;
-            case AFNetworkReachabilityStatusReachableViaWiFi:
-                if (networkStatusBlock) networkStatusBlock(DKNetworkStatusReachableViaWiFi);
-                break;
-        }
-    }];
+    _networkStatusBlock = networkStatusBlock;
 }
 
 + (BOOL)isNetworking
@@ -140,12 +134,16 @@ static DKNetworkGlobalConfig *_globalConfig;
 - (DKNetworking *(^)(NSDictionary *))header
 {
     return ^DKNetworking *(NSDictionary *header){
-        self.request.header = header;
-        if (header) {
-            [header enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id obj, BOOL * _Nonnull stop) {
-                [_sessionManager.requestSerializer setValue:obj forHTTPHeaderField:key];
-            }];
+        if (self.request.header) { // had global headers.
+            NSMutableDictionary *mergeHeader = [NSMutableDictionary dictionaryWithDictionary:self.request.header];
+            [mergeHeader addEntriesFromDictionary:header];
+            self.request.header = mergeHeader;
+        } else {
+            self.request.header = header;
         }
+        [header enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id obj, BOOL * _Nonnull stop) {
+            [self.sessionManager.requestSerializer setValue:obj forHTTPHeaderField:key];
+        }];
         return self;
     };
 }
@@ -162,7 +160,7 @@ static DKNetworkGlobalConfig *_globalConfig;
 {
     return ^DKNetworking *(DKRequestSerializer requestSerializer){
         self.request.requestSerializer = requestSerializer;
-        _sessionManager.requestSerializer = requestSerializer == DKRequestSerializerHTTP ? [AFHTTPRequestSerializer serializer] : [AFJSONRequestSerializer serializer];
+        self.sessionManager.requestSerializer = requestSerializer == DKRequestSerializerHTTP ? [AFHTTPRequestSerializer serializer] : [AFJSONRequestSerializer serializer];
         return self;
     };
 }
@@ -171,7 +169,7 @@ static DKNetworkGlobalConfig *_globalConfig;
 {
     return ^DKNetworking *(DKResponseSerializer responseSerializer){
         self.request.responseSerializer = responseSerializer;
-        _sessionManager.responseSerializer = responseSerializer == DKResponseSerializerHTTP ? [AFHTTPResponseSerializer serializer] : [AFJSONResponseSerializer serializer];
+        self.sessionManager.responseSerializer = responseSerializer == DKResponseSerializerHTTP ? [AFHTTPResponseSerializer serializer] : [AFJSONResponseSerializer serializer];
         return self;
     };
 }
@@ -180,7 +178,7 @@ static DKNetworkGlobalConfig *_globalConfig;
 {
     return ^DKNetworking *(NSTimeInterval requestTimeoutInterval){
         self.request.requestTimeoutInterval = requestTimeoutInterval;
-        _sessionManager.requestSerializer.timeoutInterval = requestTimeoutInterval;
+        self.sessionManager.requestSerializer.timeoutInterval = requestTimeoutInterval;
         return self;
     };
 }
@@ -188,18 +186,26 @@ static DKNetworkGlobalConfig *_globalConfig;
 - (RACSignal *)executeSignal
 {
     RACSignal *resultSignal = [self rac_request:self.request];
-    if (_globalConfig.flattenMapBlock)
-        return [resultSignal flattenMap:_globalConfig.flattenMapBlock];
+    if ([DKNetworkGlobalConfig defaultConfig].flattenMapBlock)
+        return [resultSignal flattenMap:[DKNetworkGlobalConfig defaultConfig].flattenMapBlock];
 
     return resultSignal;
 }
 
 #pragma mark - Global Config
 
+- (DKNetworking *(^)(NSString *))setupBaseURL
+{
+    return ^DKNetworking *(NSString *baseURL){
+        [DKNetworkGlobalConfig defaultConfig].baseURL = baseURL;
+        return self;
+    };
+}
+
 - (DKNetworking *(^)(NSDictionary *))setupGlobalHeaders
 {
     return ^DKNetworking *(NSDictionary *headers){
-        [_globalConfig setupHeaders:headers];
+        [[DKNetworkGlobalConfig defaultConfig] setupHeaders:headers];
         return self;
     };
 }
@@ -207,7 +213,7 @@ static DKNetworkGlobalConfig *_globalConfig;
 - (DKNetworking *(^)(DKRequestSerializer))setupGlobalRequestSerializer
 {
     return ^DKNetworking *(DKRequestSerializer requestSerializer){
-        _globalConfig.requestSerializer = requestSerializer;
+        [DKNetworkGlobalConfig defaultConfig].requestSerializer = requestSerializer;
         return self;
     };
 }
@@ -215,7 +221,7 @@ static DKNetworkGlobalConfig *_globalConfig;
 - (DKNetworking *(^)(DKResponseSerializer))setupGlobalResponseSerializer
 {
     return ^DKNetworking *(DKResponseSerializer responseSerializer){
-        _globalConfig.responseSerializer = responseSerializer;
+        [DKNetworkGlobalConfig defaultConfig].responseSerializer = responseSerializer;
         return self;
     };
 }
@@ -223,7 +229,7 @@ static DKNetworkGlobalConfig *_globalConfig;
 - (DKNetworking *(^)(NSTimeInterval))setupGlobalRequestTimeoutInterval
 {
     return ^DKNetworking *(NSTimeInterval requestTimeoutInterval){
-        _globalConfig.requestTimeoutInterval = requestTimeoutInterval;
+        [DKNetworkGlobalConfig defaultConfig].requestTimeoutInterval = requestTimeoutInterval;
         return self;
     };
 }
@@ -231,13 +237,14 @@ static DKNetworkGlobalConfig *_globalConfig;
 - (RACSignal *)rac_request:(DKNetworkRequest *)request
 {
     NSAssert(request.urlStr.length, @"DKNetworking Error: URL can not be nil");
+    NSAssert(request.method.length, @"DKNetworking Error: Method can not be nil");
     
     NSString *URL = request.urlStr;
     NSDictionary *parameters = request.params;
     NSString *method = request.method;
     
     RACSignal *requestSignal = [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
-        [_sessionManager requestWithMethod:method URLString:URL parameters:parameters completion:^(NSURLSessionDataTask *task, DKNetworkResponse *response) {
+        [self.sessionManager requestWithMethod:method URLString:URL parameters:parameters completion:^(NSURLSessionDataTask *task, DKNetworkResponse *response) {
             
             if (response.rawData)
                 [DKNetworkCache setCache:response.rawData URL:URL parameters:parameters];
@@ -264,62 +271,31 @@ static DKNetworkGlobalConfig *_globalConfig;
     return requestSignal;
 }
 
-#pragma mark - DKNetworkSessionManager
-
-#pragma mark Init
+#pragma mark - Private
 
 + (void)load
 {
     [[AFNetworkReachabilityManager sharedManager] startMonitoring];
+    [[AFNetworkReachabilityManager sharedManager] setReachabilityStatusChangeBlock:^(AFNetworkReachabilityStatus status) {
+        if (_networkStatusBlock) {
+            switch (status) {
+                case AFNetworkReachabilityStatusUnknown:
+                    _networkStatusBlock(DKNetworkStatusUnknown);
+                    break;
+                case AFNetworkReachabilityStatusNotReachable:
+                    _networkStatusBlock(DKNetworkStatusNotReachable);
+                    break;
+                case AFNetworkReachabilityStatusReachableViaWWAN:
+                    _networkStatusBlock(DKNetworkStatusReachableViaWWAN);
+                    break;
+                case AFNetworkReachabilityStatusReachableViaWiFi:
+                    _networkStatusBlock(DKNetworkStatusReachableViaWiFi);
+                    break;
+            }
+        }
+    }];
 }
 
-+ (void)initialize
-{
-    _sessionManager = [DKNetworkSessionManager manager];
-    _globalConfig = [DKNetworkGlobalConfig defaultConfig];
-    
-    [self initSessionManager];
-}
 
-+ (void)initSessionManager
-{
-    _sessionManager.requestSerializer = _globalConfig.requestSerializer == DKRequestSerializerHTTP ? [AFHTTPRequestSerializer serializer] : [AFJSONRequestSerializer serializer];
-    _sessionManager.responseSerializer = _globalConfig.responseSerializer == DKResponseSerializerHTTP ? [AFHTTPResponseSerializer serializer] : [AFJSONResponseSerializer serializer];
-    _sessionManager.requestSerializer.timeoutInterval = _globalConfig.requestTimeoutInterval;
-    
-    if (_globalConfig.headers) {
-        [_globalConfig.headers enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id obj, BOOL * _Nonnull stop) {
-            [_sessionManager.requestSerializer setValue:obj forHTTPHeaderField:key];
-        }];
-    }
-}
-
-+ (void)setupResponseSignalWithFlattenMapBlock:(DKNetworkFlattenMapBlock)flattenMapBlock
-{
-    _globalConfig.flattenMapBlock = flattenMapBlock;
-}
-
-+ (void)setupSessionManager:(void (^)(DKNetworkSessionManager *))sessionManagerBlock
-{
-    if (sessionManagerBlock) {
-        sessionManagerBlock(_sessionManager);
-    }
-}
-
-#pragma mark - Getters && Setters
-
-- (DKNetworkRequest *)request
-{
-    if (!_request) {
-        _request = [[DKNetworkRequest alloc] init];
-        _request.header = _globalConfig.headers;
-        _request.requestSerializer = _globalConfig.requestSerializer;
-        _request.responseSerializer = _globalConfig.responseSerializer;
-        _request.requestTimeoutInterval = _globalConfig.requestTimeoutInterval;
-        
-        [DKNetworking initSessionManager];
-    }
-    return _request;
-}
 
 @end

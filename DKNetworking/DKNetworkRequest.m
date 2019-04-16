@@ -7,17 +7,19 @@
 //
 
 #import "DKNetworkRequest.h"
+#import "DKNetworkGlobalConfig.h"
 
 @implementation DKNetworkRequest
 
-+ (instancetype)requestWithUrlStr:(NSString *)urlStr method:(NSString *)method params:(NSDictionary *)params
+- (instancetype)init
 {
-    DKNetworkRequest *request = [[self alloc] init];
-    request.urlStr = urlStr;
-    request.method = method;
-    request.params = params;
-    
-    return request;
+    if (self = [super init]) {
+        self.header = [DKNetworkGlobalConfig defaultConfig].headers;
+        self.requestSerializer = [DKNetworkGlobalConfig defaultConfig].requestSerializer;
+        self.responseSerializer = [DKNetworkGlobalConfig defaultConfig].responseSerializer;
+        self.requestTimeoutInterval = [DKNetworkGlobalConfig defaultConfig].requestTimeoutInterval;
+    }
+    return self;
 }
 
 @end
